@@ -167,6 +167,14 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Engine\Code\Engine\Engine.vcxproj">
+      <Project>{d2c8c721-daae-43ad-a8b9-08c0ac80cf4b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Protogame2D\Code\Game\Game.vcxproj">
+      <Project>{08e45489-4f88-49f1-b726-946bfc9c2aec}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
