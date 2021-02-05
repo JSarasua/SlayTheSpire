@@ -1,6 +1,6 @@
 [![Build Status](https://dev.azure.com/dservice/dservice/_apis/build/status/SMU-Guildhall-Doug-Service.Directed-Focus-Study-Template?branchName=main)](https://dev.azure.com/dservice/dservice/_build/latest?definitionId=1&branchName=main)
 # Slay The Spire GUI
-The goal of this project is to create a GUI for a card game. Card games require GUI features like drag and drop, scaling, and animations to feel good. In industry there have been more and more virtual card games like Hearthstone, Legends of Runeterra, and Gwent. Also, the GUI features card games require cover many areas that are common in all games. The artifact will be a rogue-like deckbuilding game like Slay the Spire. 
+The goal of this project is to create a GUI for a card game like [Slay the Spire](https://store.steampowered.com/app/646570/Slay_the_Spire/). Card games require GUI features like drag and drop, scaling, and animations to feel good. In industry there have been more and more virtual card games like Hearthstone, Legends of Runeterra, and Gwent. Also, the GUI features card games require cover many areas that are common in all games. The artifact will be a rogue-like deckbuilding game like Slay the Spire. 
 ## Unique Features
  * GUI
    * Widget Based
