@@ -1,12 +1,18 @@
 [![Build Status](https://dev.azure.com/dservice/dservice/_apis/build/status/SMU-Guildhall-Doug-Service.Directed-Focus-Study-Template?branchName=main)](https://dev.azure.com/dservice/dservice/_build/latest?definitionId=1&branchName=main)
-# Directed Focus Study Title 
-Paragraph which gives a high level overview of the software from a developers
-perspective.
+# Slay The Spire GUI
+The goal of this project is to create a GUI for a card game. Card games require GUI features like drag and drop, scaling, and animations to feel good. In industry there have been more and more virtual card games like Hearthstone, Legends of Runeterra, and Gwent. Also, the GUI features card games require cover many areas that are common in all games. The artifact will be a rogue-like deckbuilding game like Slay the Spire. 
 ## Unique Features
- * Feature One
- * Feature Two
- * etc.
- * 
+ * GUI
+   * Widget Based
+   * Builds from XML
+   * Event System integration
+   * Common UI features
+ * Slay the Spire-like Game
+    * Card Definitions using XML
+    * Basic card game operations
+    * Mouse controls
+    * Slay the Spire-like fights 
+ 
 Give a link to a user guide page.
 ## Supported Platforms
 ### Windows 10
@@ -16,28 +22,23 @@ and tests. Provide links to where the software can be found.
 Explain any issues that developers may run into installing prerequisites.
 **When a developer clones your repository and installs the listed
 prerequisites the build must be successful. [Graded]**
-  * Which IDE do you support? [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
-  * Which libraries do you require? Where to download them? [Crystal AI Library](https://github.com/igiagkiozis/CrystalAI)
-  * etc.
-### Next Platform
+  * [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
+  * [TinyXML2](http://grinninglizard.com/tinyxml/)
+  * [fmod](https://www.fmod.com/)
 
-### Specific Hardware Setup
-Are you working with Oculus? What does the developer need to know to get 
-up and running
 
 ## Building
-Explain any special steps required to build.
-Describe any exceptions to standard output directories.o
-Give commands for command line line tools. For example if you are using
-Java and maven.
-```
-    D:\DFS maven my-java-package
-```
+ * Confirm Engine folder is linked to game
+     * Set Linker->General->Additional Library Directories to $(SolutionDir)Code/;$(SolutionDir)../Engine/Code/
+
+
 ## Debugging
-Explain debug setup and required tools. Can the application be launched
-from IDE? Is it better to attach to already running process, etc.
+  * For the games configuration properties
+      * Debugging->Command to **$(SolutionDir)Run/$(TargetFileName)**
+      * Debugging->Working Directory to **$(SolutionDir)Run**
 ## Performance
 What performance tools are you using? Where to get them?
 ## Testing
-Describe how to run your tests.
+ * Open the project in Visual Studio and go to Test->Run All Tests
+    * Hotkey Ctrl + R then A
 
