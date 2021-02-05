@@ -12,16 +12,10 @@ The goal of this project is to create a GUI for a card game like [Slay the Spire
     * Basic card game operations
     * Mouse controls
     * Slay the Spire-like fights 
- 
-Give a link to a user guide page.
+
 ## Supported Platforms
 ### Windows 10
 #### Prerequisites
-In this section you must list everything required to build your executables
-and tests. Provide links to where the software can be found.
-Explain any issues that developers may run into installing prerequisites.
-**When a developer clones your repository and installs the listed
-prerequisites the build must be successful. [Graded]**
   * [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
   * [TinyXML2](http://grinninglizard.com/tinyxml/)
   * [fmod](https://www.fmod.com/)
@@ -36,8 +30,7 @@ prerequisites the build must be successful. [Graded]**
   * For the games configuration properties
       * Debugging->Command to **$(SolutionDir)Run/$(TargetFileName)**
       * Debugging->Working Directory to **$(SolutionDir)Run**
-## Performance
-What performance tools are you using? Where to get them?
+
 ## Testing
  * Open the project in Visual Studio and go to Test->Run All Tests
     * Hotkey Ctrl + R then A
