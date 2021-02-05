@@ -381,3 +381,11 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+src/Protogame2D/Temporary/
+
+**/Temporary/
+**/**/UnitTest/x64/
+**/x64/
+!**/Run/*.exe
+!**/Run/*.dll
+!**/ThirdParty/**/*.lib
