@@ -39,5 +39,11 @@ namespace DFS2Tests
 			Assert::AreEqual( IsPointInsideDisc2D( pointInDisc0Point5, discCenter0Point75, discRadius0Point3 ), false );
 			Assert::AreEqual( IsPointInsideDisc2D( pointInDisc0Point5, discCenter0Point75, discRadius0Point4 ), true );
 		}
+
+		//Test OBB2 Scale
+
+		//Test Transforming Widget
+
+		//Test RenderWidget
 	};
 }

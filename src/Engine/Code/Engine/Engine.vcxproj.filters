@@ -47,6 +47,9 @@
     <Filter Include="Queues">
       <UniqueIdentifier>{b8656c45-3b7e-4121-a42e-08bdddaba36e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{e2e80afb-c2d3-4998-87ec-1c37f34f73da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Math\vec2.cpp">
@@ -288,6 +291,9 @@
     </ClCompile>
     <ClCompile Include="Queues\SynchronizedLockFreeQueue.cpp">
       <Filter>Queues</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Widget.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -563,6 +569,9 @@
     </ClInclude>
     <ClInclude Include="Queues\SynchronizedLockFreeQueue.hpp">
       <Filter>Queues</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Widget.hpp">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
