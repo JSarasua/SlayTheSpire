@@ -37,6 +37,7 @@ struct OBB2
 	void		SetDimensions( const Vec2& newDimensions );
 	void		SetOrientationDegrees( float completelyNewAbsoluteOrientation );
 	void		RotateByDegrees( float relativeRotationDegrees );
+	void		UniformScale( float uniformScale );
 	void		StretchToIncludePoint( const Vec2& point );
 	void		Fix(); //Corrects the box by abs halfDimension, and normalize IBasis (restore to 1,0 if currently (0,0))
 

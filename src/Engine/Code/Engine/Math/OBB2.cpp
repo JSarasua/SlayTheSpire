@@ -183,6 +183,11 @@ void OBB2::RotateByDegrees( float relativeRotationDegrees )
 	m_iBasis.RotateDegrees(relativeRotationDegrees);
 }
 
+void OBB2::UniformScale( float uniformScale )
+{
+	m_halfDimensions *= uniformScale;
+}
+
 void OBB2::StretchToIncludePoint( const Vec2& point )
 {
 	if( IsPointInside( point ) )
