@@ -58,6 +58,13 @@ void Transform::SetNonUniformScale( Vec3 const& scale )
 	m_scale = scale;
 }
 
+void Transform::TransformBy( Transform const& transform )
+{
+	SetNonUniformScale( m_scale * transform.m_scale );
+	RotatePitchRollYawDegrees( transform.m_rotationPitchRollYawDegrees );
+	Translate( transform.m_position );
+}
+
 Mat44 Transform::ToMatrix() const
 {
 	float yaw = m_rotationPitchRollYawDegrees.z;
