@@ -16,6 +16,7 @@ class Player;
 class Shader;
 class ShaderState;
 class World;
+class Widget;
 
 struct light_t;
 struct Vertex_PCUTBN;
@@ -83,6 +84,7 @@ public:
 
 
 private:
+	void StartupUI();
 	void CheckCollisions();
 	void UpdateEntities( float deltaSeconds );
 	void UpdateCamera( float deltaSeconds );
@@ -92,6 +94,9 @@ private:
 	IntVec2 GetCurrentMapBounds() const;
 
 private:
+	GPUMesh* m_UIMesh = nullptr;
+	Widget* m_rootWidget = nullptr;
+
 	Clock* m_gameClock = nullptr;
 
 	Camera m_UICamera;

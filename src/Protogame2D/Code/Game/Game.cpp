@@ -23,6 +23,7 @@
 #include "Game/World.hpp"
 #include "Engine/Input/XboxController.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/UI/Widget.hpp"
 
 extern App* g_theApp;
 extern RenderContext* g_theRenderer;
@@ -47,19 +48,30 @@ void Game::Startup()
 	//m_camera.SetProjectionPerspective( 60.f, -0.09f, -100.f );
 	m_camera.SetProjectionOrthographic( m_camera.m_outputSize, 0.f, 100.f );
 
+	m_UICamera = Camera();
+	m_UICamera.SetColorTarget( nullptr ); // we use this
+	m_UICamera.CreateMatchingDepthStencilTarget( g_theRenderer );
+	m_UICamera.SetOutputSize( Vec2( 16.f, 9.f ) );
+	//m_camera.SetProjectionPerspective( 60.f, -0.09f, -100.f );
+	m_UICamera.SetProjectionOrthographic( m_UICamera.m_outputSize, 0.f, 100.f );
+
 	m_gameClock = new Clock();
 	m_gameClock->SetParent( Clock::GetMaster() );
 
 	g_theRenderer->Setup( m_gameClock );
-
 	m_screenTexture = g_theRenderer->CreateTextureFromColor( Rgba8::BLACK, IntVec2(1920,1080) );
 
 	m_world = new World( this );
 	m_world->Startup();
+
+	StartupUI();
 }
 
 void Game::Shutdown()
 {
+	delete m_rootWidget;
+	m_rootWidget = nullptr;
+
 	m_world->Shutdown();
 	delete m_world;
 	m_world = nullptr;
@@ -75,7 +87,12 @@ void Game::Update()
 	{
 		CheckButtonPresses( dt );
 	}
+	Vec2 mousePos = g_theInput->GetMouseNormalizedPos();
 
+	AABB2 screenBounds = AABB2( m_UICamera.GetOrthoBottomLeft(), m_UICamera.GetOrthoTopRight() );
+	mousePos = screenBounds.GetPointAtUV( mousePos );
+
+	m_rootWidget->UpdateHovered( mousePos );
 	m_world->Update( dt );
 	UpdateCamera( dt );
 }
@@ -85,8 +102,18 @@ void Game::Render()
 	Texture* backbuffer = g_theRenderer->GetBackBuffer();
 	Texture* colorTarget = g_theRenderer->AcquireRenderTargetMatching( backbuffer );
 	m_camera.SetColorTarget( 0, colorTarget );
+	m_UICamera.SetColorTarget( 0, colorTarget );
+
+	g_theRenderer->BeginCamera( m_camera );
+	g_theRenderer->SetModelMatrix( Mat44() );
+	g_theRenderer->SetBlendMode( eBlendMode::ALPHA );
+	g_theRenderer->SetDepth( eDepthCompareMode::COMPARE_ALWAYS, eDepthWriteMode::WRITE_ALL );
+	g_theRenderer->BindTexture( nullptr );
+	g_theRenderer->BindShader( (Shader*)nullptr );
 
 	RenderGame();
+	g_theRenderer->EndCamera( m_camera );
+
 	RenderUI();
 
 	g_theRenderer->CopyTexture( backbuffer, colorTarget );
@@ -98,6 +125,60 @@ void Game::Render()
 	DebugRenderWorldToCamera( &m_camera );
 	DebugRenderScreenTo( g_theRenderer->GetBackBuffer() );
 	DebugRenderEndFrame();
+}
+
+void Game::StartupUI()
+{
+	m_UIMesh = new GPUMesh( g_theRenderer );
+	std::vector<Vertex_PCU> uiVerts;
+	std::vector<uint> uiIndices;
+	AABB2 uiBounds = AABB2( Vec2( -0.5f, -0.5f ), Vec2( 0.5f, 0.5f ) );
+	AABB2 defaultUVs = AABB2( Vec2(), Vec2( 1.f, 1.f ) );
+	Vertex_PCU::AppendIndexedVertsAABB2D( uiVerts, uiIndices, uiBounds, Rgba8::WHITE, defaultUVs );
+	m_UIMesh->UpdateVertices( uiVerts );
+	m_UIMesh->UpdateIndices( uiIndices );
+
+	AABB2 screenBounds = AABB2( m_UICamera.GetOrthoBottomLeft(), m_UICamera.GetOrthoTopRight() );
+
+	m_rootWidget = new Widget( m_UIMesh, screenBounds );
+
+	Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
+
+	Vec3 scale = Vec3( 0.125f, 0.3f, 1.f );
+	Transform card1Transform = Transform();
+	card1Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.1f, 0.2f ) );
+	card1Transform.m_scale = scale;
+	Widget* card1Widget = new Widget( m_UIMesh, card1Transform );
+	card1Widget->SetTexture( strikeTexture );
+	m_rootWidget->AddChild( card1Widget );
+
+	Transform card2Transform = Transform();
+	card2Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.3f, 0.2f ) );
+	card2Transform.m_scale = scale;
+	Widget* card2Widget = new Widget( m_UIMesh, card2Transform );
+	card2Widget->SetTexture( strikeTexture );
+	m_rootWidget->AddChild( card2Widget );
+	Transform card3Transform = Transform();
+
+	card3Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.5f, 0.2f ) );
+	card3Transform.m_scale = scale;
+	Widget* card3Widget = new Widget( m_UIMesh, card3Transform );
+	card3Widget->SetTexture( strikeTexture );
+	m_rootWidget->AddChild( card3Widget );
+
+	Transform card4Transform = Transform();
+	card4Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.7f, 0.2f ) );
+	card4Transform.m_scale = scale;
+	Widget* card4Widget = new Widget( m_UIMesh, card4Transform );
+	card4Widget->SetTexture( strikeTexture );
+	m_rootWidget->AddChild( card4Widget );
+
+	Transform card5Transform = Transform();
+	card5Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.9f, 0.2f ) );
+	card5Transform.m_scale = scale;
+	Widget* card5Widget = new Widget( m_UIMesh, card5Transform );
+	card5Widget->SetTexture( strikeTexture );
+	m_rootWidget->AddChild( card5Widget );
 }
 
 void Game::CheckCollisions()
@@ -131,9 +212,10 @@ void Game::UpdateCamera( float deltaSeconds )
 
 void Game::RenderGame()
 {
-	g_theRenderer->BeginCamera( m_camera );
+	//g_theRenderer->BeginCamera( m_camera );
 	m_world->Render();
-	g_theRenderer->EndCamera( m_camera );
+	//m_rootWidget->Render();
+	//g_theRenderer->EndCamera( m_camera );
 }
 
 void Game::RenderUI()
@@ -142,6 +224,21 @@ void Game::RenderUI()
 	int playerHealth = player->GetCurrentHealth();
 	std::string playerHealthStr = Stringf( "Player Health: %i", playerHealth );
 	DebugAddScreenText( Vec4( 0.01f, 0.95f, 0.f, 0.f ), Vec2( 0.f, 0.f ), 20.f, Rgba8::WHITE, Rgba8::WHITE, 0.f, playerHealthStr.c_str() );
+
+	g_theRenderer->BeginCamera( m_UICamera );
+	g_theRenderer->SetModelMatrix( Mat44() );
+	g_theRenderer->SetBlendMode( eBlendMode::ALPHA );
+	g_theRenderer->SetDepth( eDepthCompareMode::COMPARE_ALWAYS, eDepthWriteMode::WRITE_ALL );
+
+	m_rootWidget->Render();
+
+// 	Rgba8 backgroundTint = Rgba8( 128, 128, 128, 128 );
+// 	AABB2 gameCamera = AABB2( m_UICamera.GetOrthoBottomLeft(), m_UICamera.GetOrthoTopRight() );
+// 	g_theRenderer->BindTexture( nullptr );
+// 	g_theRenderer->SetBlendMode( eBlendMode::ALPHA );
+// 	g_theRenderer->DrawAABB2Filled( gameCamera, backgroundTint );
+	g_theRenderer->EndCamera( m_UICamera );
+	//m_rootWidget->Render();
 }
 
 void Game::CheckButtonPresses(float deltaSeconds)
