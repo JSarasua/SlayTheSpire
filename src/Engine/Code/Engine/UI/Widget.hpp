@@ -34,7 +34,7 @@ public:
 	//Mutators
 	void TransformWidget( Transform const& transform );
 	void AddChild( Widget* childWidget );
-	void SetTexture( Texture* texture );
+	void SetTexture( Texture* texture, Texture* highlightTexture );
 
 	//Accessors
 	Mat44 GetRelativeModelMatrix() const;
@@ -50,6 +50,7 @@ private:
 	Transform m_widgetTransform;
 	GPUMesh* m_mesh = nullptr;
 	Texture* m_texture = nullptr;
+	Texture* m_highlightTexture = nullptr;
 	
 	std::string m_eventToFire;
 	//properties

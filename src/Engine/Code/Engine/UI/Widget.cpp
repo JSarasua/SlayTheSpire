@@ -48,9 +48,10 @@ void Widget::AddChild( Widget* childWidget )
 	m_childWidgets.push_back( childWidget );
 }
 
-void Widget::SetTexture( Texture* texture )
+void Widget::SetTexture( Texture* texture, Texture* highlightTexture )
 {
 	m_texture = texture;
+	m_highlightTexture = highlightTexture;
 }
 
 void Widget::Render()
@@ -68,8 +69,7 @@ void Widget::Render()
 
 			if( m_isHovered )
 			{
-				Texture* blueTexture = context->CreateTextureFromColor( Rgba8::CYAN );
-				context->BindTexture( blueTexture );
+				context->BindTexture( m_highlightTexture );
 				context->DrawMesh( m_mesh );
 			}
 
