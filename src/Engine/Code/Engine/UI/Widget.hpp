@@ -35,6 +35,8 @@ public:
 	void TransformWidget( Transform const& transform );
 	void AddChild( Widget* childWidget );
 	void SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture );
+	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
+	void SetCanDrag( bool canDrag ) { m_canDrag = canDrag; }
 
 	//Accessors
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
@@ -45,8 +47,11 @@ public:
 	Mat44 GetInverseModelMatrix() const;
 	bool IsPointInside( Vec2 const& point ) const;
 	void UpdateHovered( Vec2 const& point );
+	void UpdateDrag();
 	void CheckInput();
-	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
+
+	Vec2 GetWorldTopRight() const;
+	Vec2 GetWorldCenter() const;
 
 	bool GetIsHovered() const { return m_isHovered; }
 	bool GetIsSelected() const { return m_isSelected; }
@@ -68,4 +73,9 @@ private:
 	bool m_isVisible = false;
 	bool m_isHovered = false;
 	bool m_isSelected = false;
+	bool m_canDrag = false;
+	
+	Vec2 const s_invalidMousePosition = Vec2( -9999.f, -9999.f );
+	Vec2 m_mouseOffset = s_invalidMousePosition;
+	Vec2 m_currentMousePosition = s_invalidMousePosition;
 };

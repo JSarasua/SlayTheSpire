@@ -97,6 +97,7 @@ void Game::Update()
 
 	m_rootWidget->UpdateHovered( mousePos );
 	m_rootWidget->CheckInput();
+	m_rootWidget->UpdateDrag();
 	m_world->Update( dt );
 	UpdateCamera( dt );
 }
@@ -158,6 +159,7 @@ void Game::StartupUI()
 	Widget* card1Widget = new Widget( m_UIMesh, card1Transform );
 	card1Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
 	card1Widget->SetEventToFire( testEvent );
+	card1Widget->SetCanDrag( true );
 	m_rootWidget->AddChild( card1Widget );
 
 	Transform card2Transform = Transform();

@@ -205,13 +205,38 @@ bool Widget::IsPointInside( Vec2 const& point ) const
 
 void Widget::UpdateHovered( Vec2 const& point )
 {
+	m_currentMousePosition = point;
 	m_isHovered = IsPointInside( point );
+	if( m_isSelected )
+	{
+		if( m_mouseOffset == s_invalidMousePosition )
+		{
+			m_mouseOffset = point - GetWorldCenter();
+		}
+	}
 
 	for( Widget* childWidget : m_childWidgets )
 	{
 		if( nullptr != childWidget )
 		{
 			childWidget->UpdateHovered( point );
+		}
+	}
+}
+
+void Widget::UpdateDrag()
+{
+	if( m_isSelected && m_canDrag && m_mouseOffset != s_invalidMousePosition )
+	{
+		Vec2 position = m_currentMousePosition - m_mouseOffset;
+		m_widgetTransform.m_position = position;
+	}
+
+	for( Widget* childWidget : m_childWidgets )
+	{
+		if( nullptr != childWidget )
+		{
+			childWidget->UpdateDrag();
 		}
 	}
 }
@@ -223,15 +248,16 @@ void Widget::CheckInput()
 
 	if( leftMouseButton.WasJustPressed() && m_isHovered )
 	{
+		m_isSelected = true;
 		g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
 	}
 	if( leftMouseButton.IsPressed() && m_isHovered )
 	{
-		m_isSelected = true;
 	}
 	if( leftMouseButton.WasJustReleased() )
 	{
 		m_isSelected = false;
+		m_mouseOffset = s_invalidMousePosition;
 	}
 
 	for( Widget* childWidget : m_childWidgets )
@@ -241,5 +267,23 @@ void Widget::CheckInput()
 			childWidget->CheckInput();
 		}
 	}
+}
+
+Vec2 Widget::GetWorldTopRight() const
+{
+	Mat44 invMatrix = GetRelativeModelMatrixNoScale();
+	Vec2 localTopRight = Vec2( 0.5f, 0.5f );
+	Vec2 worldTopRight = invMatrix.TransformPosition2D( localTopRight );
+
+	return worldTopRight;
+}
+
+Vec2 Widget::GetWorldCenter() const
+{
+	Mat44 invMatrix = GetRelativeModelMatrixNoScale();
+	Vec2 localCenter = Vec2( 0.f, 0.f );
+	Vec2 worlCenter = invMatrix.TransformPosition2D( localCenter );
+
+	return worlCenter;
 }
 
