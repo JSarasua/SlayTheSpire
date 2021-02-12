@@ -96,6 +96,7 @@ void Game::Update()
 	mousePos = screenBounds.GetPointAtUV( mousePos );
 
 	m_rootWidget->UpdateHovered( mousePos );
+	m_rootWidget->CheckInput();
 	m_world->Update( dt );
 	UpdateCamera( dt );
 }
@@ -142,46 +143,52 @@ void Game::StartupUI()
 	m_UIMesh->UpdateIndices( uiIndices );
 
 	AABB2 screenBounds = AABB2( m_UICamera.GetOrthoBottomLeft(), m_UICamera.GetOrthoTopRight() );
-
+	std::string testEvent = "help";
 	m_rootWidget = new Widget( m_UIMesh, screenBounds );
 
 	Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
 	Texture* highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
+	Texture* selectTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
 
 	Vec3 scale = Vec3( 0.125f, 0.3f, 1.f );
 	Transform card1Transform = Transform();
 	card1Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.1f, 0.2f ) );
 	card1Transform.m_scale = scale;
 	Widget* card1Widget = new Widget( m_UIMesh, card1Transform );
-	card1Widget->SetTexture( strikeTexture, highlightTexture );
+	card1Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
+	card1Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card1Widget );
 
 	Transform card2Transform = Transform();
 	card2Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.3f, 0.2f ) );
 	card2Transform.m_scale = scale;
 	Widget* card2Widget = new Widget( m_UIMesh, card2Transform );
-	card2Widget->SetTexture( strikeTexture, highlightTexture );
+	card2Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
+	card2Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card2Widget );
+	
 	Transform card3Transform = Transform();
-
 	card3Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.5f, 0.2f ) );
 	card3Transform.m_scale = scale;
 	Widget* card3Widget = new Widget( m_UIMesh, card3Transform );
-	card3Widget->SetTexture( strikeTexture, highlightTexture );
+	card3Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
+	card3Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card3Widget );
 
 	Transform card4Transform = Transform();
 	card4Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.7f, 0.2f ) );
 	card4Transform.m_scale = scale;
 	Widget* card4Widget = new Widget( m_UIMesh, card4Transform );
-	card4Widget->SetTexture( strikeTexture, highlightTexture );
+	card4Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
+	card4Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card4Widget );
 
 	Transform card5Transform = Transform();
 	card5Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.9f, 0.2f ) );
 	card5Transform.m_scale = scale;
 	Widget* card5Widget = new Widget( m_UIMesh, card5Transform );
-	card5Widget->SetTexture( strikeTexture, highlightTexture );
+	card5Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
+	card5Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card5Widget );
 }
 

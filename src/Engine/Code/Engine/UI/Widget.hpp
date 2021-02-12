@@ -34,13 +34,15 @@ public:
 	//Mutators
 	void TransformWidget( Transform const& transform );
 	void AddChild( Widget* childWidget );
-	void SetTexture( Texture* texture, Texture* highlightTexture );
+	void SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture );
 
 	//Accessors
 	Mat44 GetRelativeModelMatrix() const;
 	Mat44 GetReverseModelMatrix() const;
 	bool IsPointInside( Vec2 const& point ) const;
 	void UpdateHovered( Vec2 const& point );
+	void CheckInput();
+	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
 
 private:
 	Widget* m_parentWidget = nullptr;
@@ -51,10 +53,12 @@ private:
 	GPUMesh* m_mesh = nullptr;
 	Texture* m_texture = nullptr;
 	Texture* m_highlightTexture = nullptr;
+	Texture* m_selectedTexture = nullptr;
 	
 	std::string m_eventToFire;
 	//properties
 
 	bool m_isVisible = false;
 	bool m_isHovered = false;
+	bool m_isSelected = false;
 };

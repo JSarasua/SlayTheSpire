@@ -3,6 +3,8 @@
 #include "Engine/Renderer/GPUMesh.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Math/MatrixUtils.hpp"
+#include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Input/InputSystem.hpp"
 
 Widget::Widget( GPUMesh* mesh, Transform const& transform, Widget* parentWidget) :
 	m_mesh( mesh ),
@@ -48,10 +50,11 @@ void Widget::AddChild( Widget* childWidget )
 	m_childWidgets.push_back( childWidget );
 }
 
-void Widget::SetTexture( Texture* texture, Texture* highlightTexture )
+void Widget::SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture )
 {
 	m_texture = texture;
 	m_highlightTexture = highlightTexture;
+	m_selectedTexture = selectTexture;
 }
 
 void Widget::Render()
@@ -67,7 +70,12 @@ void Widget::Render()
 			context->SetModelMatrix( modelMatrix );
 			context->BindShader( (Shader*)nullptr );
 
-			if( m_isHovered )
+			if( m_isSelected )
+			{
+				context->BindTexture( m_selectedTexture );
+				context->DrawMesh( m_mesh );
+			}
+			else if( m_isHovered )
 			{
 				context->BindTexture( m_highlightTexture );
 				context->DrawMesh( m_mesh );
@@ -140,6 +148,33 @@ void Widget::UpdateHovered( Vec2 const& point )
 		if( nullptr != childWidget )
 		{
 			childWidget->UpdateHovered( point );
+		}
+	}
+}
+
+void Widget::CheckInput()
+{
+	KeyButtonState const& leftMouseButton = g_theInput->GetMouseButton(LeftMouseButton);
+
+
+	if( leftMouseButton.WasJustPressed() && m_isHovered )
+	{
+		g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
+	}
+	if( leftMouseButton.IsPressed() && m_isHovered )
+	{
+		m_isSelected = true;
+	}
+	if( leftMouseButton.WasJustReleased() )
+	{
+		m_isSelected = false;
+	}
+
+	for( Widget* childWidget : m_childWidgets )
+	{
+		if( nullptr != childWidget )
+		{
+			childWidget->CheckInput();
 		}
 	}
 }
