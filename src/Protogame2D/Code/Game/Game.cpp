@@ -150,9 +150,9 @@ void Game::StartupUI()
 	Texture* highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
 	Texture* selectTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
 
-	Vec3 scale = Vec3( 0.125f, 0.3f, 1.f );
+	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
 	Transform card1Transform = Transform();
-	card1Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.35f, 0.2f ) );
+	card1Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.35f, 0.2f ) );
 	card1Transform.m_scale = scale;
 	card1Transform.m_rotationPitchRollYawDegrees.y = 15.f;
 	Widget* card1Widget = new Widget( m_UIMesh, card1Transform );
@@ -161,7 +161,7 @@ void Game::StartupUI()
 	m_rootWidget->AddChild( card1Widget );
 
 	Transform card2Transform = Transform();
-	card2Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.425f, 0.245f ) );
+	card2Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.425f, 0.245f ) );
 	card2Transform.m_scale = scale;
 	card2Transform.m_rotationPitchRollYawDegrees.y = 7.5f;
 	Widget* card2Widget = new Widget( m_UIMesh, card2Transform );
@@ -170,7 +170,7 @@ void Game::StartupUI()
 	m_rootWidget->AddChild( card2Widget );
 	
 	Transform card3Transform = Transform();
-	card3Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.5f, 0.25f ) );
+	card3Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.25f ) );
 	card3Transform.m_scale = scale;
 	Widget* card3Widget = new Widget( m_UIMesh, card3Transform );
 	card3Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
@@ -178,7 +178,7 @@ void Game::StartupUI()
 	m_rootWidget->AddChild( card3Widget );
 
 	Transform card4Transform = Transform();
-	card4Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.575f, 0.245f ) );
+	card4Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.575f, 0.245f ) );
 	card4Transform.m_scale = scale;
 	card4Transform.m_rotationPitchRollYawDegrees.y = -7.5f;
 	Widget* card4Widget = new Widget( m_UIMesh, card4Transform );
@@ -187,7 +187,7 @@ void Game::StartupUI()
 	m_rootWidget->AddChild( card4Widget );
 
 	Transform card5Transform = Transform();
-	card5Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.65f, 0.2f ) );
+	card5Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.65f, 0.2f ) );
 	card5Transform.m_scale = scale;
 	card5Transform.m_rotationPitchRollYawDegrees.y = -15.f;
 	Widget* card5Widget = new Widget( m_UIMesh, card5Transform );

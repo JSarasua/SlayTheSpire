@@ -60,9 +60,9 @@ namespace DFS2Tests
 
 		TEST_METHOD( WidgetChildTransformTest1 )
 		{
-			Vec3 scale = Vec3( 0.1f, 0.1f, 1.f );
+			Vec3 scale = Vec3( 1.f, 1.f, 1.f );
 			Transform childTransform = Transform();
-			childTransform.m_position = uiBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
+			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
 			childTransform.m_scale = scale;
 			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
 			rootWidget.AddChild( childWidget );
@@ -75,9 +75,9 @@ namespace DFS2Tests
 
 		TEST_METHOD( WidgetChildTransformTest2 )
 		{
-			Vec3 scale = Vec3( 0.2f, 0.1f, 1.f );
+			Vec3 scale = Vec3( 2.f, 1.f, 1.f );
 			Transform childTransform = Transform();
-			childTransform.m_position = uiBounds.GetPointAtUV( Vec2( 0.6f, 0.5f ) );
+			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.6f, 0.5f ) );
 			childTransform.m_scale = scale;
 			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
 			rootWidget.AddChild( childWidget );
@@ -90,9 +90,9 @@ namespace DFS2Tests
 
 		TEST_METHOD( WidgetHoveredCheck )
 		{
-			Vec3 scale = Vec3( 0.1f, 0.1f, 1.f );
+			Vec3 scale = Vec3( 1.f, 1.f, 1.f );
 			Transform childTransform = Transform();
-			childTransform.m_position = uiBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
+			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
 			childTransform.m_scale = scale;
 			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
 			rootWidget.AddChild( childWidget );

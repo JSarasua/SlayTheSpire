@@ -57,6 +57,69 @@ void Widget::SetTexture( Texture* texture, Texture* highlightTexture, Texture* s
 	m_selectedTexture = selectTexture;
 }
 
+Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
+{
+	Mat44 parentMatrix;
+	Mat44 myLocalMatrix = m_widgetTransform.ToMatrixNoScale();
+	if( nullptr != m_parentWidget )
+	{
+		parentMatrix = m_parentWidget->GetRelativeModelMatrix();
+	}
+	//Pushing on local matrix to the end of maxtrix chain
+	parentMatrix.TransformBy( myLocalMatrix );
+
+	return parentMatrix;
+}
+
+Mat44 Widget::GetParentInverseModelMatrixNoScale() const
+{
+	Mat44 myLocalMatrix = m_widgetTransform.ToMatrixNoScale();
+	MatrixInvert( myLocalMatrix );
+
+	Mat44 currentMatrix;
+	currentMatrix = myLocalMatrix;
+	Widget* parentWidget = m_parentWidget;
+	while( parentWidget )
+	{
+		Mat44 parentMatrix = parentWidget->m_widgetTransform.ToMatrixNoScale();
+		MatrixInvert( parentMatrix );
+		currentMatrix.TransformBy( parentMatrix );
+		parentWidget = parentWidget->m_parentWidget;
+	}
+
+	return currentMatrix;
+}
+
+Mat44 Widget::GetRelativeModelMatrixNoScale() const
+{
+	Mat44 parentRelativeMatrixNoScale;
+	if( m_parentWidget )
+	{
+		parentRelativeMatrixNoScale = m_parentWidget->GetParentRelativeModelMatrixNoScale();
+	}
+
+	Mat44 myLocalMatrix = m_widgetTransform.ToMatrix();
+
+	parentRelativeMatrixNoScale.TransformBy( myLocalMatrix );
+	return parentRelativeMatrixNoScale;
+}
+
+Mat44 Widget::GetInverseModelMatrixNoScale() const
+{
+	Mat44 parentInverseMatrixNoScale;
+	if( m_parentWidget )
+	{
+		parentInverseMatrixNoScale = m_parentWidget->GetParentInverseModelMatrixNoScale();
+	}
+
+	Mat44 myLocalMatrix = m_widgetTransform.ToMatrix();
+	MatrixInvert( myLocalMatrix );
+
+	myLocalMatrix.TransformBy( parentInverseMatrixNoScale );
+
+	return myLocalMatrix;
+}
+
 void Widget::Render()
 {
 	//Render Self
@@ -65,8 +128,9 @@ void Widget::Render()
 		RenderContext* context = m_mesh->m_renderContext;
 		if( nullptr != context )
 		{
-			Mat44 modelMatrix = GetRelativeModelMatrix();
-			//Mat44 myMatrix = m_widgetTransform.ToMatrix();
+			//Mat44 modelMatrix = GetRelativeModelMatrix();
+			Mat44 modelMatrix = GetRelativeModelMatrixNoScale();
+
 			context->SetModelMatrix( modelMatrix );
 			context->BindShader( (Shader*)nullptr );
 
@@ -110,7 +174,7 @@ Mat44 Widget::GetRelativeModelMatrix() const
 	return parentMatrix;
 }
 
-Mat44 Widget::GetReverseModelMatrix() const
+Mat44 Widget::GetInverseModelMatrix() const
 {
 	Mat44 myLocalMatrix = m_widgetTransform.ToMatrix();
 	MatrixInvert( myLocalMatrix );
@@ -131,7 +195,7 @@ Mat44 Widget::GetReverseModelMatrix() const
 
 bool Widget::IsPointInside( Vec2 const& point ) const
 {
-	Mat44 localSpaceMatrix = GetReverseModelMatrix();
+	Mat44 localSpaceMatrix = GetInverseModelMatrixNoScale();
 	Vec2 localPosition = localSpaceMatrix.TransformPosition2D( point );
 
 	//Unsure if this works. Need to test. Matrices may be going backwards

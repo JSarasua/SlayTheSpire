@@ -37,8 +37,12 @@ public:
 	void SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture );
 
 	//Accessors
+	Mat44 GetParentRelativeModelMatrixNoScale() const;
+	Mat44 GetParentInverseModelMatrixNoScale() const;
+	Mat44 GetRelativeModelMatrixNoScale() const;
+	Mat44 GetInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrix() const;
-	Mat44 GetReverseModelMatrix() const;
+	Mat44 GetInverseModelMatrix() const;
 	bool IsPointInside( Vec2 const& point ) const;
 	void UpdateHovered( Vec2 const& point );
 	void CheckInput();
