@@ -85,11 +85,36 @@ Mat44 Transform::ToMatrix() const
 	Mat44 mat;
 	mat.Translate3D( m_position );
 	//Moved ScaleNonUniform before Rotate
-	mat.ScaleNonUniform3D( m_scale );
 	mat.RotateYawPitchRollDegress( yaw, pitch, roll );
+	mat.ScaleNonUniform3D( m_scale );
 // 	mat.RotateZDegrees( m_rotationPitchRollYawDegrees.z );
 // 	mat.RotateYDegrees( m_rotationPitchRollYawDegrees.y );
 // 	mat.RotateXDegrees( m_rotationPitchRollYawDegrees.x );
+	mat.TransformBy( lookAtDir );
+
+	return mat;
+}
+
+Mat44 Transform::ToMatrixNoScale() const
+{
+	float yaw = m_rotationPitchRollYawDegrees.z;
+	float pitch = m_rotationPitchRollYawDegrees.x;
+	float roll = m_rotationPitchRollYawDegrees.y;
+
+	Mat44 lookAtDir;
+	if( g_currentBases == eYawPitchRollRotationOrder::YXZ )
+	{
+		//lookAtDir = LookAt( Vec3( 0.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 1.f ), Vec3( 0.f, 1.f, 0.f ) );
+	}
+	else if( g_currentBases == eYawPitchRollRotationOrder::ZYX )
+	{
+		lookAtDir = LookAt( Vec3( 0.f, 0.f, 0.f ), Vec3( 1.f, 0.f, 0.f ), Vec3( 0.f, 0.f, 1.f ) );
+	}
+	//MatrixInvertOrthoNormal( lookAtDir );
+
+	Mat44 mat;
+	mat.Translate3D( m_position );
+	mat.RotateYawPitchRollDegress( yaw, pitch, roll );
 	mat.TransformBy( lookAtDir );
 
 	return mat;
