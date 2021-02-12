@@ -84,11 +84,12 @@ Mat44 Transform::ToMatrix() const
 
 	Mat44 mat;
 	mat.Translate3D( m_position );
+	//Moved ScaleNonUniform before Rotate
+	mat.ScaleNonUniform3D( m_scale );
 	mat.RotateYawPitchRollDegress( yaw, pitch, roll );
 // 	mat.RotateZDegrees( m_rotationPitchRollYawDegrees.z );
 // 	mat.RotateYDegrees( m_rotationPitchRollYawDegrees.y );
 // 	mat.RotateXDegrees( m_rotationPitchRollYawDegrees.x );
-	mat.ScaleNonUniform3D( m_scale );
 	mat.TransformBy( lookAtDir );
 
 	return mat;
