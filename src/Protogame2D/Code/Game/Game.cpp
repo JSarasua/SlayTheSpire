@@ -152,16 +152,18 @@ void Game::StartupUI()
 
 	Vec3 scale = Vec3( 0.125f, 0.3f, 1.f );
 	Transform card1Transform = Transform();
-	card1Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.1f, 0.2f ) );
+	card1Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.2f, 0.1f ) );
 	card1Transform.m_scale = scale;
+	card1Transform.m_rotationPitchRollYawDegrees.y = 30.f;
 	Widget* card1Widget = new Widget( m_UIMesh, card1Transform );
 	card1Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
 	card1Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card1Widget );
 
 	Transform card2Transform = Transform();
-	card2Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.3f, 0.2f ) );
+	card2Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.35f, 0.15f ) );
 	card2Transform.m_scale = scale;
+	card2Transform.m_rotationPitchRollYawDegrees.y = 15.f;
 	Widget* card2Widget = new Widget( m_UIMesh, card2Transform );
 	card2Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
 	card2Widget->SetEventToFire( testEvent );
@@ -176,16 +178,18 @@ void Game::StartupUI()
 	m_rootWidget->AddChild( card3Widget );
 
 	Transform card4Transform = Transform();
-	card4Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.7f, 0.2f ) );
+	card4Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.65f, 0.15f ) );
 	card4Transform.m_scale = scale;
+	card4Transform.m_rotationPitchRollYawDegrees.y = -15.f;
 	Widget* card4Widget = new Widget( m_UIMesh, card4Transform );
 	card4Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
 	card4Widget->SetEventToFire( testEvent );
 	m_rootWidget->AddChild( card4Widget );
 
 	Transform card5Transform = Transform();
-	card5Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.9f, 0.2f ) );
+	card5Transform.m_position = uiBounds.GetPointAtUV( Vec2( 0.8f, 0.1f ) );
 	card5Transform.m_scale = scale;
+	card5Transform.m_rotationPitchRollYawDegrees.y = -30.f;
 	Widget* card5Widget = new Widget( m_UIMesh, card5Transform );
 	card5Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
 	card5Widget->SetEventToFire( testEvent );
