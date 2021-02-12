@@ -44,6 +44,9 @@ public:
 	void CheckInput();
 	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
 
+	bool GetIsHovered() const { return m_isHovered; }
+	bool GetIsSelected() const { return m_isSelected; }
+
 private:
 	Widget* m_parentWidget = nullptr;
 	std::vector<Widget*> m_childWidgets;
