@@ -1,9 +1,14 @@
 #pragma once
 #include "GameCommon.hpp"
-#include "App.hpp"
+#include "Game/App.hpp"
+#include "Game/Game.hpp"
+#include "Engine/Audio/AudioSystem.hpp"
 
-extern RenderContext* g_theRenderer;
 Window* g_theWindow = nullptr;
+App* g_theApp = nullptr;
+RenderContext* g_theRenderer = nullptr;
+AudioSystem* g_theAudio = nullptr;
+Game* g_theGame = nullptr;
 
 void DrawLine( Vec2 startPoint, Vec2 endPoint, Rgba8 color, float thickness )
 {

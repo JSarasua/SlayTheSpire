@@ -13,6 +13,7 @@ public:
 	void SetRotationFromPitchRollYawDegrees( Vec3 const& pitchRollYaw );
 	void SetUniformScale( float scale );
 	void SetNonUniformScale( Vec3 const& scale );
+	void TransformBy( Transform const& transform );
 
 	Mat44 ToMatrix() const;
 	Mat44 ToMatrixWithoutWorldBasis() const;

@@ -3,7 +3,16 @@
 struct Vec2;
 struct Rgba8;
 
+class App;
+class Game;
+class AudioSystem;
+class RenderContext;
+
 extern Window* g_theWindow;
+extern RenderContext* g_theRenderer;
+extern App* g_theApp;
+extern Game* g_theGame;
+extern AudioSystem* g_theAudio;
 
 constexpr float CLIENT_ASPECT = 16.f/9.f;
 
