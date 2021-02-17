@@ -235,6 +235,7 @@
     <ClCompile Include="Renderer\TextureView.cpp" />
     <ClCompile Include="Time\Clock.cpp" />
     <ClCompile Include="Time\Timer.cpp" />
+    <ClCompile Include="UI\UIManager.cpp" />
     <ClCompile Include="UI\Widget.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -329,6 +330,7 @@
     <ClInclude Include="Renderer\TextureView.hpp" />
     <ClInclude Include="Time\Clock.hpp" />
     <ClInclude Include="Time\Timer.hpp" />
+    <ClInclude Include="UI\UIManager.hpp" />
     <ClInclude Include="UI\Widget.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
