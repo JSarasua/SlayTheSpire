@@ -17,6 +17,7 @@ class Shader;
 class ShaderState;
 class World;
 class Widget;
+class UIManager;
 
 struct light_t;
 struct Vertex_PCUTBN;
@@ -91,11 +92,9 @@ private:
 	void RenderGame();
 	void RenderUI();
 	void CheckButtonPresses(float deltaSeconds);
-	IntVec2 GetCurrentMapBounds() const;
 
 private:
-	GPUMesh* m_UIMesh = nullptr;
-	Widget* m_rootWidget = nullptr;
+	UIManager* m_UIManager = nullptr;
 
 	Clock* m_gameClock = nullptr;
 
@@ -106,8 +105,8 @@ private:
 
 	int m_currentLevel = 0;
 
-	World* m_world = nullptr;
-	Player* m_player = nullptr;
+// 	World* m_world = nullptr;
+// 	Player* m_player = nullptr;
 
 	Texture* m_screenTexture = nullptr;
 
