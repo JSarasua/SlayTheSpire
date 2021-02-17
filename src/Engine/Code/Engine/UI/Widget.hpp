@@ -37,6 +37,9 @@ public:
 	void SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture );
 	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
 	void SetCanDrag( bool canDrag ) { m_canDrag = canDrag; }
+	void SetCanHover( bool canHover ) { m_canHover = canHover; }
+	void SetCanSelect( bool canSelect ) { m_canSelect = canSelect; }
+	void RemoveHoverAndSelected();
 
 	//Accessors
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
@@ -46,7 +49,7 @@ public:
 	Mat44 GetRelativeModelMatrix() const;
 	Mat44 GetInverseModelMatrix() const;
 	bool IsPointInside( Vec2 const& point ) const;
-	void UpdateHovered( Vec2 const& point );
+	bool UpdateHovered( Vec2 const& point );
 	void UpdateDrag();
 	void CheckInput();
 
@@ -74,6 +77,8 @@ private:
 	bool m_isHovered = false;
 	bool m_isSelected = false;
 	bool m_canDrag = false;
+	bool m_canSelect = true;
+	bool m_canHover= true;
 	
 	Vec2 const s_invalidMousePosition = Vec2( -9999.f, -9999.f );
 	Vec2 m_mouseOffset = s_invalidMousePosition;

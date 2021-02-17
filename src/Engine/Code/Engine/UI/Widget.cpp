@@ -57,6 +57,12 @@ void Widget::SetTexture( Texture* texture, Texture* highlightTexture, Texture* s
 	m_selectedTexture = selectTexture;
 }
 
+void Widget::RemoveHoverAndSelected()
+{
+	m_isHovered = false;
+	m_isSelected = false;
+}
+
 Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
 {
 	Mat44 parentMatrix;
@@ -203,10 +209,10 @@ bool Widget::IsPointInside( Vec2 const& point ) const
 	return widgetBounds.IsPointInside( localPosition );
 }
 
-void Widget::UpdateHovered( Vec2 const& point )
+bool Widget::UpdateHovered( Vec2 const& point )
 {
 	m_currentMousePosition = point;
-	m_isHovered = IsPointInside( point );
+	m_isHovered = IsPointInside( point ) && m_canHover;
 	if( m_isSelected )
 	{
 		if( m_mouseOffset == s_invalidMousePosition )
@@ -215,13 +221,24 @@ void Widget::UpdateHovered( Vec2 const& point )
 		}
 	}
 
-	for( Widget* childWidget : m_childWidgets )
+	bool doesAWidgetHover = false;
+	for( int widgetIndex = (int)m_childWidgets.size() - 1; widgetIndex >= 0; widgetIndex-- )
 	{
+		Widget* childWidget = m_childWidgets[widgetIndex];
 		if( nullptr != childWidget )
 		{
-			childWidget->UpdateHovered( point );
+			if( doesAWidgetHover )
+			{
+				childWidget->RemoveHoverAndSelected();
+			}
+			else
+			{
+				doesAWidgetHover = childWidget->UpdateHovered( point );
+			}
 		}
 	}
+
+	return m_isHovered;
 }
 
 void Widget::UpdateDrag()
@@ -246,7 +263,7 @@ void Widget::CheckInput()
 	KeyButtonState const& leftMouseButton = g_theInput->GetMouseButton(LeftMouseButton);
 
 
-	if( leftMouseButton.WasJustPressed() && m_isHovered )
+	if( leftMouseButton.WasJustPressed() && m_isHovered && m_canSelect )
 	{
 		m_isSelected = true;
 		g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );

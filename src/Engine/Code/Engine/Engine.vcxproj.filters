@@ -295,6 +295,9 @@
     <ClCompile Include="UI\Widget.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="UI\UIManager.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\vec2.hpp">
@@ -571,6 +574,9 @@
       <Filter>Queues</Filter>
     </ClInclude>
     <ClInclude Include="UI\Widget.hpp">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIManager.hpp">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
