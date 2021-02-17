@@ -2,8 +2,11 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/OBB2.hpp"
 #include "Engine/Math/Transform.hpp"
+#include "Engine/UI/UIState.hpp"
 #include <vector>
 #include <string>
+#include <map>
+
 
 struct Vec2;
 
@@ -83,4 +86,7 @@ private:
 	Vec2 const s_invalidMousePosition = Vec2( -9999.f, -9999.f );
 	Vec2 m_mouseOffset = s_invalidMousePosition;
 	Vec2 m_currentMousePosition = s_invalidMousePosition;
+
+	UIState* m_currentState = nullptr;
+	std::map< std::string, UIState > m_states;
 };

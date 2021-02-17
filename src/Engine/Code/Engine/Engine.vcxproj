@@ -236,7 +236,9 @@
     <ClCompile Include="Time\Clock.cpp" />
     <ClCompile Include="Time\Timer.cpp" />
     <ClCompile Include="UI\UIManager.cpp" />
+    <ClCompile Include="UI\UIState.cpp" />
     <ClCompile Include="UI\Widget.cpp" />
+    <ClCompile Include="UI\WidgetHand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ThirdParty\fmod\fmod.h" />
@@ -331,7 +333,9 @@
     <ClInclude Include="Time\Clock.hpp" />
     <ClInclude Include="Time\Timer.hpp" />
     <ClInclude Include="UI\UIManager.hpp" />
+    <ClInclude Include="UI\UIState.hpp" />
     <ClInclude Include="UI\Widget.hpp" />
+    <ClInclude Include="UI\WidgetHand.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
