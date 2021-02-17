@@ -1201,7 +1201,11 @@ void RenderContext::BeginCamera( Camera& camera )
 
 		for( uint rtvsIndex = 0; rtvsIndex < rtvCount; rtvsIndex++ )
 		{
-			m_context->ClearRenderTargetView( rtvs[rtvsIndex], clearFloats );
+			ID3D11RenderTargetView* rtv = rtvs[rtvsIndex];
+			if( rtv )
+			{
+				m_context->ClearRenderTargetView( rtv, clearFloats );
+			}
 		}
 
 	}
