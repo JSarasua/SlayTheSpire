@@ -46,6 +46,24 @@
     <ClCompile Include="Player.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerBoard.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="GameState.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="CardDefinition.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="CardPile.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyDefintion.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -76,6 +94,24 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="EngineBuildPreferences.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBoard.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="GameState.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CardDefinition.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CardPile.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyDefinition.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.hpp">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
