@@ -1,35 +1,19 @@
 #pragma once
 #include "Game/Game.hpp"
-#include "Engine/Math/AABB2.hpp"
-#include "App.hpp"
+#include "Game/App.hpp"
+#include "Game/GameCommon.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
-#include "Engine/Time/Clock.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
+#include "Engine/Time/Clock.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
-#include "Game/GameCommon.hpp"
 #include "Engine/Renderer/GPUMesh.hpp"
 #include "Engine/Input/InputSystem.hpp"
-#include "Engine/Math/LineSegment3.hpp"
-#include "Engine/Renderer/Material.hpp"
-#include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/MatrixUtils.hpp"
-#include "Engine/Renderer/MeshUtils.hpp"
-#include "Game/Player.hpp"
-#include "Engine/Renderer/Sampler.hpp"
-#include "Engine/Renderer/Shader.hpp"
-#include "Engine/Renderer/ShaderState.hpp"
-#include "Engine/Core/StringUtils.hpp"
-#include "Game/World.hpp"
 #include "Engine/Input/XboxController.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/UI/Widget.hpp"
 #include "Engine/UI/UIManager.hpp"
-
-extern App* g_theApp;
-extern RenderContext* g_theRenderer;
-extern InputSystem* g_theInput;
-extern AudioSystem* g_theAudio;
+#include "Engine/Math/AABB2.hpp"
 
 
 Game::Game()
@@ -367,15 +351,9 @@ void Game::CheckButtonPresses(float deltaSeconds)
 	}
 	if( gKey.IsPressed() )
 	{
-		float currentGamma = g_theRenderer->GetGamma();
-		float newGamma = currentGamma - 2.f * deltaSeconds;
-		g_theRenderer->SetGamma( newGamma );
 	}
 	if( hKey.IsPressed() )
 	{
-		float currentGamma = g_theRenderer->GetGamma();
-		float newGamma = currentGamma + 2.f * deltaSeconds;
-		g_theRenderer->SetGamma( newGamma );
 	}
 	if( f5Key.WasJustPressed() )
 	{
@@ -396,25 +374,9 @@ void Game::CheckButtonPresses(float deltaSeconds)
 
 	if( rKey.WasJustPressed() )
 	{
-		Vec3 startPos = m_camera.GetPosition();
-		Vec3 endPos = Vec3( 0.f, 0.f, -5.f );
-		Mat44 cameraModel = m_camera.GetModelRotationMatrix();
-
-		endPos = cameraModel.TransformPosition3D( endPos );
-		endPos += startPos;
-		LineSegment3 line = LineSegment3( startPos, endPos );
-		DebugAddWorldLine( line, Rgba8::GREEN, Rgba8::BLUE, 10.f, DEBUG_RENDER_USE_DEPTH );
 	}
 	if( fKey.WasJustPressed() )
 	{
-		Vec3 startPos = m_camera.GetPosition();
-		Vec3 endPos = Vec3( 0.f, 0.f, -5.f );
-		Mat44 cameraModel = m_camera.GetModelRotationMatrix();
-
-		endPos = cameraModel.TransformPosition3D( endPos );
-		endPos += startPos;
-		LineSegment3 line = LineSegment3( startPos, endPos );
-		DebugAddWorldArrow( line, Rgba8::GREEN, Rgba8::BLUE, 10.f, DEBUG_RENDER_USE_DEPTH );
 	}
 	if( tKey.WasJustPressed() )
 	{
