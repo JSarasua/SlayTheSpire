@@ -69,7 +69,7 @@ Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
 	Mat44 myLocalMatrix = m_widgetTransform.ToMatrixNoScale();
 	if( nullptr != m_parentWidget )
 	{
-		parentMatrix = m_parentWidget->GetRelativeModelMatrix();
+		parentMatrix = m_parentWidget->GetParentRelativeModelMatrixNoScale();
 	}
 	//Pushing on local matrix to the end of maxtrix chain
 	parentMatrix.TransformBy( myLocalMatrix );
@@ -153,6 +153,13 @@ void Widget::Render()
 
 			context->BindTexture( m_texture );
 			context->DrawMesh( m_mesh );
+
+			if( m_text.size() > 0 )
+			{
+				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
+				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
+
+			}
 		}
 	}
 

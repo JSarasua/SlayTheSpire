@@ -27,6 +27,9 @@ public:
 	void Render();
 
 private:
+	void UpdateUI();
+	void MatchUIToGameState();
+
 	void StartupCardGame();
 	void StartupUI();
 	void CheckCollisions();
@@ -45,6 +48,11 @@ private:
 	Texture* m_screenTexture = nullptr;
 
 	GameState* m_currentGamestate = nullptr;
+
+	Widget* m_deckWidget = nullptr;
+	Widget* m_discardPileWidget = nullptr;
+	Widget* m_baseCardWidget = nullptr;
+	Widget* m_handWidget = nullptr;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

@@ -43,6 +43,9 @@ public:
 	void SetCanHover( bool canHover ) { m_canHover = canHover; }
 	void SetCanSelect( bool canSelect ) { m_canSelect = canSelect; }
 	void RemoveHoverAndSelected();
+	void SetPosition( Vec2 const& position ) { m_widgetTransform.m_position = position; }
+	void SetText( std::string const& text ) { m_text = text; }
+	void SetTextSize( float textSize ) { m_textSize = textSize; }
 
 	//Accessors
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
@@ -75,7 +78,8 @@ private:
 	
 	std::string m_eventToFire;
 	//properties
-
+	std::string m_text;
+	float m_textSize = 1.f;
 	bool m_isVisible = false;
 	bool m_isHovered = false;
 	bool m_isSelected = false;
