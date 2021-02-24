@@ -12,6 +12,7 @@ public:
 	void AddPile( CardPile const& cardPile );
 	void ClearPile();
 	std::vector<eCard> ToVector() const;
+	int GetTotalSize() const;
 private:
 	std::array<int, eCard::NUM_CARDS> m_cards;
 };

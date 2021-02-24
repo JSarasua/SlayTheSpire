@@ -49,3 +49,14 @@ std::vector<eCard> CardPile::ToVector() const
 	return cards;
 }
 
+int CardPile::GetTotalSize() const
+{
+	int totalSize = 0;
+	for( size_t cardIndex = 0; cardIndex < m_cards.size(); cardIndex++ )
+	{
+		totalSize += m_cards[cardIndex];
+	}
+
+	return totalSize;
+}
+

@@ -75,7 +75,7 @@ void PlayerBoard::ShuffleDeck()
  	RandomNumberGenerator& rng = g_theGame->m_rand;
 
 	int currentIndex = 0;
-	int maxIndex = (int)m_deck.size();
+	int maxIndex = (int)m_deck.size() - 1;
 
 	while( currentIndex < maxIndex )
 	{
@@ -110,5 +110,20 @@ void PlayerBoard::DrawHand()
 	DrawCard();
 	DrawCard();
 	DrawCard();
+}
+
+int PlayerBoard::GetDeckSize() const
+{
+	return (int)m_deck.size();
+}
+
+int PlayerBoard::GetHandSize() const
+{
+	return m_hand.GetTotalSize();
+}
+
+int PlayerBoard::GetDiscardPileSize() const
+{
+	return m_discardPile.GetTotalSize();
 }
 

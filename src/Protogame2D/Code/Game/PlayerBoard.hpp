@@ -24,6 +24,10 @@ public:
 	void DrawCard();
 	void DrawHand(); //5 cards
 
+	int GetDeckSize() const;
+	int GetHandSize() const;
+	int GetDiscardPileSize() const;
+
 public:
 	std::vector<eCard> m_deck; 
 	CardPile m_hand;
