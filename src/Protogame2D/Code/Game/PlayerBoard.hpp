@@ -7,7 +7,18 @@ class GameState;
 
 class PlayerBoard
 {
+	PlayerBoard( std::vector<eCard> const& deck, CardPile const& hand, CardPile const& discardPile,
+		int playerEnergy, int playerMaxEnergy, int playerHealth, int playerBlock, GameState* parentState );
 
+	void AddCardToDeckAndShuffle( eCard card );
+	void AddCardToDiscardPile( eCard card );
+	void RemoveCardFromDeck( eCard card );
+	void RemoveCardFromDiscardPile( eCard card );
+	void MoveDiscardPileToDeckAndShuffle();
+	void DiscardHand();
+	void ShuffleDeck();
+	void DrawCard();
+	void DrawHand(); //5 cards
 public:
 	std::vector<eCard> m_deck; 
 	CardPile m_hand;
