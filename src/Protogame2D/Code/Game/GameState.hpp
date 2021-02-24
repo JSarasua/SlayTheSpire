@@ -5,7 +5,9 @@
 
 class GameState
 {
+public:
 	GameState( PlayerBoard const& playerBoard, Enemy const& enemy );
+	GameState();
 	~GameState() {}
 
 public:

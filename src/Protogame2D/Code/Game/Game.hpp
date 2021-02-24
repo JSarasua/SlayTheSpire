@@ -12,6 +12,7 @@
 class Clock;
 class Widget;
 class UIManager;
+class GameState;
 
 class Game
 {
@@ -26,6 +27,7 @@ public:
 	void Render();
 
 private:
+	void StartupCardGame();
 	void StartupUI();
 	void CheckCollisions();
 	void UpdateEntities( float deltaSeconds );
@@ -41,6 +43,8 @@ private:
 	Camera m_camera;
 	Vec2 m_cameraPosition;
 	Texture* m_screenTexture = nullptr;
+
+	GameState* m_currentGamestate = nullptr;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

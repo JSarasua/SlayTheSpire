@@ -2,6 +2,10 @@
 #include "Game/Game.hpp"
 #include "Game/App.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/GameState.hpp"
+#include "Game/PlayerBoard.hpp"
+#include "Game/Enemy.hpp"
+#include "Game/CardDefinition.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
 #include "Engine/Time/Clock.hpp"
@@ -25,10 +29,8 @@ void Game::Startup()
 {
 	EnableDebugRendering();
  	m_camera = Camera();
-	//m_camera.SetColorTarget(nullptr); // we use this
 	m_camera.CreateMatchingDepthStencilTarget( g_theRenderer );
 	m_camera.SetOutputSize( Vec2( 16.f, 9.f ) );
-	//m_camera.SetProjectionPerspective( 60.f, -0.09f, -100.f );
 	m_camera.SetProjectionOrthographic( m_camera.m_outputSize, 0.f, 100.f );
 
 	m_gameClock = new Clock();
@@ -52,6 +54,12 @@ void Game::Shutdown()
 	{
 		delete m_gameClock;
 		m_gameClock = nullptr;
+	}
+
+	if( m_currentGamestate )
+	{
+		delete m_currentGamestate;
+		m_currentGamestate = nullptr;
 	}
 }
 
@@ -79,6 +87,12 @@ void Game::Render()
 	DebugRenderWorldToCamera( &m_camera );
 	DebugRenderScreenTo( g_theRenderer->GetBackBuffer() );
 	DebugRenderEndFrame();
+}
+
+void Game::StartupCardGame()
+{
+	CardDefinition::InitializeCardDefinitions();
+	m_currentGamestate = new GameState();
 }
 
 void Game::StartupUI()

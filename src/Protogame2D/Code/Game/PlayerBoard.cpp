@@ -3,6 +3,31 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 
+void PlayerBoard::InitializePlayerBoard()
+{
+	m_deck.clear();
+	m_hand.ClearPile();
+	m_discardPile.ClearPile();
+
+	m_deck.reserve( 10 );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Strike );
+	m_deck.push_back( eCard::Block );
+	m_deck.push_back( eCard::Block );
+	m_deck.push_back( eCard::Block );
+
+	ShuffleDeck();
+
+	m_playerEnergy = m_playerMaxEnergy;
+	m_playerHealth = m_playerMaxHealth;
+	m_playerBlock = 0;
+}
+
 void PlayerBoard::AddCardToDeckAndShuffle( eCard card )
 {
 	m_deck.push_back( card );
