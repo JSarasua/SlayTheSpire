@@ -11,7 +11,7 @@ UIManager::UIManager( Vec2 screenDimensions, RenderContext* contextToUse ) :
 {
 	m_camera = Camera();
 	m_camera.SetColorTarget( nullptr ); // we use this
-	m_camera.CreateMatchingDepthStencilTarget( m_context );
+	//m_camera.CreateMatchingDepthStencilTarget( m_context );
 	m_camera.SetOutputSize( screenDimensions );
 	m_camera.SetProjectionOrthographic( m_camera.m_outputSize, 0.f, 100.f );
 	m_screenBounds = AABB2( m_camera.GetOrthoBottomLeft(), m_camera.GetOrthoTopRight() );

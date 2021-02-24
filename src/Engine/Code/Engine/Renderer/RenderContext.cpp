@@ -789,7 +789,7 @@ Texture* RenderContext::CreateDepthStencilTarget()
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	dsDesc.StencilEnable = false;
 
-
+	DX_SAFE_RELEASE( m_depthStencilState );
 	m_device->CreateDepthStencilState( &dsDesc, &m_depthStencilState );
 	m_context->OMSetDepthStencilState( m_depthStencilState, 1 );
 

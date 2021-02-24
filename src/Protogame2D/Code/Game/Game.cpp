@@ -28,10 +28,10 @@ Game::~Game(){}
 void Game::Startup()
 {
 	EnableDebugRendering();
- 	m_camera = Camera();
+ 	//m_camera = Camera();
 	m_camera.CreateMatchingDepthStencilTarget( g_theRenderer );
-	m_camera.SetOutputSize( Vec2( 16.f, 9.f ) );
-	m_camera.SetProjectionOrthographic( m_camera.m_outputSize, 0.f, 100.f );
+	//m_camera.SetOutputSize( Vec2( 16.f, 9.f ) );
+	//m_camera.SetProjectionOrthographic( m_camera.m_outputSize, 0.f, 100.f );
 
 	m_gameClock = new Clock();
 	m_gameClock->SetParent( Clock::GetMaster() );
