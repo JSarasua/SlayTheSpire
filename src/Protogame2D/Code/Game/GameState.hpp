@@ -6,7 +6,7 @@
 class GameState
 {
 	GameState( PlayerBoard const& playerBoard, Enemy const& enemy );
-	~GameState();
+	~GameState() {}
 
 public:
 	int m_whoseTurn = 0;
