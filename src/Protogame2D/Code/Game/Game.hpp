@@ -25,7 +25,6 @@ public:
 	void Update();
 	void Render();
 
-
 private:
 	void StartupUI();
 	void CheckCollisions();
@@ -37,19 +36,11 @@ private:
 
 private:
 	UIManager* m_UIManager = nullptr;
-
 	Clock* m_gameClock = nullptr;
-
 	Camera m_UICamera;
-	float m_maxCameraShake = 0.f;
 	Camera m_camera;
 	Vec2 m_cameraPosition;
-
-	int m_currentLevel = 0;
-
-
 	Texture* m_screenTexture = nullptr;
-
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;
