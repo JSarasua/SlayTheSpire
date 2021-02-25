@@ -53,6 +53,7 @@ private:
 	Widget* m_discardPileWidget = nullptr;
 	Widget* m_baseCardWidget = nullptr;
 	Widget* m_handWidget = nullptr;
+	Widget* m_energyWidget = nullptr;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

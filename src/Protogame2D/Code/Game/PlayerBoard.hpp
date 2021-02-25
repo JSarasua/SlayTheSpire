@@ -27,6 +27,8 @@ public:
 	int GetDeckSize() const;
 	int GetHandSize() const;
 	int GetDiscardPileSize() const;
+	int GetEnergy() const { return m_playerEnergy; }
+	int GetMaxEnergy() const { return m_playerMaxEnergy; }
 
 public:
 	std::vector<eCard> m_deck; 

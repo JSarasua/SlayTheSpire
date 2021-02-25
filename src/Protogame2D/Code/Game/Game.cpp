@@ -105,6 +105,11 @@ void Game::UpdateUI()
 
 	int discardPileSize = playerBoard.GetDiscardPileSize();
 	m_discardPileWidget->SetText( Stringf( "%i", discardPileSize ) );
+
+	int energy = playerBoard.GetEnergy();
+	int maxEnergy = playerBoard.GetMaxEnergy();
+
+	m_energyWidget->SetText( Stringf( "%i/%i", energy, maxEnergy ) );
 }
 
 void Game::MatchUIToGameState()
@@ -126,6 +131,7 @@ void Game::StartupUI()
 	Widget* rootWidget = m_UIManager->GetRootWidget();
 	GPUMesh* uiMesh = m_UIManager->GetUIMesh();
 
+	Texture* energyStoneTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/EnergyStone.png" );
 	Texture* deckTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Magic_card_back.jpg" );
 	Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
 	Texture* highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
@@ -211,6 +217,11 @@ void Game::StartupUI()
 	deckWidget->SetTextSize( 0.1f );
 	rootWidget->AddChild( deckWidget );
 	m_deckWidget = deckWidget;
+
+	m_energyWidget = new Widget( *deckWidget );
+	m_energyWidget->SetTexture( energyStoneTexture, highlightTexture, selectTexture );
+	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
+	rootWidget->AddChild( m_energyWidget );
 
 	Widget* discardWidget = new Widget( *deckWidget );
 	discardWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.95f, 0.1f ) ) );
