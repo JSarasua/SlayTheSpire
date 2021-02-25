@@ -50,10 +50,11 @@ public:
 	//Accessors
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
 	Mat44 GetParentInverseModelMatrixNoScale() const;
-	Mat44 GetRelativeModelMatrixNoScale() const;
+	Mat44 GetRelativeModelMatrixScaleOnlySelf() const;
 	Mat44 GetInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrix() const;
 	Mat44 GetInverseModelMatrix() const;
+	Mat44 GetInverseModelMatrixScaleOnlySelf() const;
 	bool IsPointInside( Vec2 const& point ) const;
 	bool UpdateHovered( Vec2 const& point );
 	void UpdateDrag();
@@ -61,6 +62,7 @@ public:
 
 	Vec2 GetWorldTopRight() const;
 	Vec2 GetWorldCenter() const;
+	
 
 	bool GetIsHovered() const { return m_isHovered; }
 	bool GetIsSelected() const { return m_isSelected; }
