@@ -50,7 +50,7 @@ void Widget::AddChild( Widget* childWidget )
 	m_childWidgets.push_back( childWidget );
 }
 
-void Widget::SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture )
+void Widget::SetTexture( Texture const* texture, Texture const* highlightTexture, Texture const* selectTexture )
 {
 	m_texture = texture;
 	m_highlightTexture = highlightTexture;
@@ -61,6 +61,17 @@ void Widget::RemoveHoverAndSelected()
 {
 	m_isHovered = false;
 	m_isSelected = false;
+}
+
+void Widget::ClearChildren()
+{
+	for( Widget* childWidget : m_childWidgets )
+	{
+		delete childWidget;
+		childWidget = nullptr;
+	}
+
+	m_childWidgets.clear();
 }
 
 Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
@@ -286,6 +297,7 @@ void Widget::CheckInput()
 	if( leftMouseButton.WasJustPressed() && m_isHovered && m_canSelect )
 	{
 		m_isSelected = true;
+		g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
 		g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
 	}
 	if( leftMouseButton.IsPressed() && m_isHovered )
@@ -315,6 +327,22 @@ Vec2 Widget::GetWorldTopRight() const
 	return worldTopRight;
 }
 
+Vec2 Widget::GetWorldBottomLeft() const
+{
+	Mat44 invMatrix = GetRelativeModelMatrixScaleOnlySelf();
+	Vec2 localBottomLeft = Vec2( -0.5f, -0.5f );
+	Vec2 worldBottomLeft = invMatrix.TransformPosition2D( localBottomLeft );
+
+	return worldBottomLeft;
+}
+
+AABB2 Widget::GetWorldAABB2() const
+{
+	AABB2 worldAABB = AABB2( GetWorldBottomLeft(), GetWorldTopRight() );
+
+	return worldAABB;
+}
+
 Vec2 Widget::GetWorldCenter() const
 {
 	Mat44 invMatrix = GetRelativeModelMatrixScaleOnlySelf();
@@ -322,5 +350,15 @@ Vec2 Widget::GetWorldCenter() const
 	Vec2 worlCenter = invMatrix.TransformPosition2D( localCenter );
 
 	return worlCenter;
+}
+
+AABB2 Widget::GetLocalAABB2() const
+{
+	Mat44 localMatrix = m_widgetTransform.ToMatrixNoTranslation();
+	Vec2 localBottomLeft = localMatrix.TransformPosition2D( Vec2( -0.5f, -0.5f ) );
+	Vec2 localTopRight = localMatrix.TransformPosition2D( Vec2( 0.5f, 0.5f ) );
+
+	AABB2 localAABB = AABB2( localBottomLeft, localTopRight );
+	return localAABB;
 }
 

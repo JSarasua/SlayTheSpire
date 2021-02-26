@@ -41,6 +41,8 @@ void Game::Startup()
 
 	StartupCardGame();
 	StartupUI();
+
+	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
 }
 
 void Game::Shutdown()
@@ -97,6 +99,19 @@ void Game::Render()
 	DebugRenderEndFrame();
 }
 
+bool Game::EndTurn( EventArgs const& args )
+{
+	UNUSED( args );
+
+	PlayerBoard& playerBoard = m_currentGamestate->m_playerBoard;
+	playerBoard.DiscardHand();
+	playerBoard.DrawHand();
+	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+
+	MatchUIToGameState();
+	return true;
+}
+
 void Game::UpdateUI()
 {
 	PlayerBoard const& playerBoard  = m_currentGamestate->m_playerBoard;
@@ -115,14 +130,31 @@ void Game::UpdateUI()
 void Game::MatchUIToGameState()
 {
 	PlayerBoard const& playerBoard = m_currentGamestate->m_playerBoard;
+	m_handWidget->ClearChildren();
 
-	AABB2 screenBounds = m_UIManager->GetScreenBounds();
+
+	AABB2 handBounds = m_handWidget->GetLocalAABB2();
+	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
+	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
+	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
+	{
+		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+		Widget* cardWidget = new Widget( *m_baseCardWidget );
+		cardWidget->SetPosition( slotCenter );
+		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+		cardWidget->SetTexture( cardDef.GetCardTexture(), m_highlightTexture, m_selectTexture );
+	
+		m_handWidget->AddChild( cardWidget );
+	}
 }
 
 void Game::StartupCardGame()
 {
 	CardDefinition::InitializeCardDefinitions();
 	m_currentGamestate = new GameState();
+
+	PlayerBoard& player = m_currentGamestate->m_playerBoard;
+	player.DrawHand();
 }
 
 void Game::StartupUI()
@@ -133,9 +165,10 @@ void Game::StartupUI()
 
 	Texture* energyStoneTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/EnergyStone.png" );
 	Texture* deckTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Magic_card_back.jpg" );
-	Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
-	Texture* highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
-	Texture* selectTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
+	Texture* buttonTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/button-icon.jpg" );
+	//Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
+	m_highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
+	m_selectTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
 	Texture* handTexture = g_theRenderer->CreateTextureFromColor( Rgba8::SandyTan );
 
 	std::string testEvent = "help";
@@ -147,6 +180,7 @@ void Game::StartupUI()
 	Transform baseTransform = Transform();
 	baseTransform.m_scale = baseCardScale;
 	m_baseCardWidget = new Widget( uiMesh, baseTransform );
+	m_baseCardWidget->SetCanDrag( true );
 
 	//Hand widget
 	Vec3 handScale = Vec3( 12.f, 3.f, 1.f );
@@ -157,52 +191,52 @@ void Game::StartupUI()
 	m_handWidget->SetTexture( handTexture, nullptr, nullptr );
 	rootWidget->AddChild( m_handWidget );
 
-	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
-	Transform card1Transform = Transform();
-	card1Transform.m_position = Vec2( -3.f, 0.f );
-	card1Transform.m_scale = scale;
-	card1Transform.m_rotationPitchRollYawDegrees.y = 0.f;
-	Widget* card1Widget = new Widget( uiMesh, card1Transform );
-	card1Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
-	card1Widget->SetEventToFire( testEvent );
-	card1Widget->SetCanDrag( true );
-	m_handWidget->AddChild( card1Widget );
-
-	Transform card2Transform = Transform();
-	card2Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.425f, 0.245f ) );
-	card2Transform.m_scale = scale;
-	card2Transform.m_rotationPitchRollYawDegrees.y = 7.5f;
-	Widget* card2Widget = new Widget( uiMesh, card2Transform );
-	card2Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
-	card2Widget->SetEventToFire( testEvent );
-	card2Widget->SetCanDrag( true );
-	rootWidget->AddChild( card2Widget );
-	
-	Transform card3Transform = Transform();
-	card3Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.25f ) );
-	card3Transform.m_scale = scale;
-	Widget* card3Widget = new Widget( uiMesh, card3Transform );
-	card3Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
-	card3Widget->SetEventToFire( testEvent );
-	rootWidget->AddChild( card3Widget );
-
-	Transform card4Transform = Transform();
-	card4Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.575f, 0.245f ) );
-	card4Transform.m_scale = scale;
-	card4Transform.m_rotationPitchRollYawDegrees.y = -7.5f;
-	Widget* card4Widget = new Widget( uiMesh, card4Transform );
-	card4Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
-	card4Widget->SetEventToFire( testEvent );
-	rootWidget->AddChild( card4Widget );
-
-	Transform card5Transform = Transform();
-	card5Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.65f, 0.2f ) );
-	card5Transform.m_scale = scale;
-	card5Transform.m_rotationPitchRollYawDegrees.y = -15.f;
-	Widget* card5Widget = new Widget( uiMesh, card5Transform );
-	card5Widget->SetTexture( strikeTexture, highlightTexture, selectTexture );
-	card5Widget->SetEventToFire( testEvent );
-	rootWidget->AddChild( card5Widget );
+// 	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
+// 	Transform card1Transform = Transform();
+// 	card1Transform.m_position = Vec2( -3.f, 0.f );
+// 	card1Transform.m_scale = scale;
+// 	card1Transform.m_rotationPitchRollYawDegrees.y = 0.f;
+// 	Widget* card1Widget = new Widget( uiMesh, card1Transform );
+// 	card1Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
+// 	card1Widget->SetEventToFire( testEvent );
+// 	card1Widget->SetCanDrag( true );
+// 	m_handWidget->AddChild( card1Widget );
+// 
+// 	Transform card2Transform = Transform();
+// 	card2Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.425f, 0.245f ) );
+// 	card2Transform.m_scale = scale;
+// 	card2Transform.m_rotationPitchRollYawDegrees.y = 7.5f;
+// 	Widget* card2Widget = new Widget( uiMesh, card2Transform );
+// 	card2Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
+// 	card2Widget->SetEventToFire( testEvent );
+// 	card2Widget->SetCanDrag( true );
+// 	rootWidget->AddChild( card2Widget );
+// 	
+// 	Transform card3Transform = Transform();
+// 	card3Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.25f ) );
+// 	card3Transform.m_scale = scale;
+// 	Widget* card3Widget = new Widget( uiMesh, card3Transform );
+// 	card3Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
+// 	card3Widget->SetEventToFire( testEvent );
+// 	rootWidget->AddChild( card3Widget );
+// 
+// 	Transform card4Transform = Transform();
+// 	card4Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.575f, 0.245f ) );
+// 	card4Transform.m_scale = scale;
+// 	card4Transform.m_rotationPitchRollYawDegrees.y = -7.5f;
+// 	Widget* card4Widget = new Widget( uiMesh, card4Transform );
+// 	card4Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
+// 	card4Widget->SetEventToFire( testEvent );
+// 	rootWidget->AddChild( card4Widget );
+// 
+// 	Transform card5Transform = Transform();
+// 	card5Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.65f, 0.2f ) );
+// 	card5Transform.m_scale = scale;
+// 	card5Transform.m_rotationPitchRollYawDegrees.y = -15.f;
+// 	Widget* card5Widget = new Widget( uiMesh, card5Transform );
+// 	card5Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
+// 	card5Widget->SetEventToFire( testEvent );
+// 	rootWidget->AddChild( card5Widget );
 
 
 
@@ -211,7 +245,7 @@ void Game::StartupUI()
 	deckTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.05f, 0.1f ) );
 	deckTransform.m_scale = deckScale;
 	Widget* deckWidget = new Widget( uiMesh, deckTransform );
-	deckWidget->SetTexture( deckTexture, highlightTexture, selectTexture );
+	deckWidget->SetTexture( deckTexture, m_highlightTexture, m_selectTexture );
 	deckWidget->SetCanHover( true );
 	deckWidget->SetText( "Hello" );
 	deckWidget->SetTextSize( 0.1f );
@@ -219,7 +253,7 @@ void Game::StartupUI()
 	m_deckWidget = deckWidget;
 
 	m_energyWidget = new Widget( *deckWidget );
-	m_energyWidget->SetTexture( energyStoneTexture, highlightTexture, selectTexture );
+	m_energyWidget->SetTexture( energyStoneTexture, m_highlightTexture, m_selectTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
 	rootWidget->AddChild( m_energyWidget );
 
@@ -227,6 +261,19 @@ void Game::StartupUI()
 	discardWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.95f, 0.1f ) ) );
 	rootWidget->AddChild( discardWidget );
 	m_discardPileWidget = discardWidget;
+
+	Transform endTurnTransform = Transform();
+	endTurnTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.95f, 0.25f ) );
+	endTurnTransform.m_scale = Vec3( 1.5f, 0.75f, 1.f );
+	m_endTurnWidget = new Widget( uiMesh, endTurnTransform );
+	m_endTurnWidget->SetCanSelect( true );
+	m_endTurnWidget->SetEventToFire( "endTurn" );
+	m_endTurnWidget->SetText( "End Turn" );
+	m_endTurnWidget->SetTextSize( 0.1f );
+	m_endTurnWidget->SetTexture( buttonTexture, m_highlightTexture, m_selectTexture );
+	rootWidget->AddChild( m_endTurnWidget );
+
+	MatchUIToGameState();
 }
 
 void Game::CheckCollisions()

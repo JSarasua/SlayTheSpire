@@ -26,6 +26,8 @@ public:
 	void Update();
 	void Render();
 
+	bool EndTurn( EventArgs const& args );
+
 private:
 	void UpdateUI();
 	void MatchUIToGameState();
@@ -39,6 +41,7 @@ private:
 	void RenderUI();
 	void CheckButtonPresses(float deltaSeconds);
 
+
 private:
 	UIManager* m_UIManager = nullptr;
 	Clock* m_gameClock = nullptr;
@@ -46,6 +49,8 @@ private:
 	Camera m_camera;
 	Vec2 m_cameraPosition;
 	Texture* m_screenTexture = nullptr;
+	Texture const* m_highlightTexture;
+	Texture const* m_selectTexture;
 
 	GameState* m_currentGamestate = nullptr;
 
@@ -54,6 +59,7 @@ private:
 	Widget* m_baseCardWidget = nullptr;
 	Widget* m_handWidget = nullptr;
 	Widget* m_energyWidget = nullptr;
+	Widget* m_endTurnWidget = nullptr;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

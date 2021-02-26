@@ -37,7 +37,7 @@ public:
 	//Mutators
 	void TransformWidget( Transform const& transform );
 	void AddChild( Widget* childWidget );
-	void SetTexture( Texture* texture, Texture* highlightTexture, Texture* selectTexture );
+	void SetTexture( Texture const* texture, Texture const* highlightTexture, Texture const* selectTexture );
 	void SetEventToFire( std::string const& eventToFire ) { m_eventToFire = eventToFire; }
 	void SetCanDrag( bool canDrag ) { m_canDrag = canDrag; }
 	void SetCanHover( bool canHover ) { m_canHover = canHover; }
@@ -46,6 +46,7 @@ public:
 	void SetPosition( Vec2 const& position ) { m_widgetTransform.m_position = position; }
 	void SetText( std::string const& text ) { m_text = text; }
 	void SetTextSize( float textSize ) { m_textSize = textSize; }
+	void ClearChildren();
 
 	//Accessors
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
@@ -61,7 +62,10 @@ public:
 	void CheckInput();
 
 	Vec2 GetWorldTopRight() const;
+	Vec2 GetWorldBottomLeft() const;
+	AABB2 GetWorldAABB2() const;
 	Vec2 GetWorldCenter() const;
+	AABB2 GetLocalAABB2() const;
 	
 
 	bool GetIsHovered() const { return m_isHovered; }
@@ -74,9 +78,9 @@ private:
 	//Assume 1x1 Square
 	Transform m_widgetTransform;
 	GPUMesh* m_mesh = nullptr;
-	Texture* m_texture = nullptr;
-	Texture* m_highlightTexture = nullptr;
-	Texture* m_selectedTexture = nullptr;
+	Texture const* m_texture = nullptr;
+	Texture const* m_highlightTexture = nullptr;
+	Texture const* m_selectedTexture = nullptr;
 	
 	std::string m_eventToFire;
 	//properties
