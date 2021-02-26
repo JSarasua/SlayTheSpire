@@ -116,7 +116,6 @@ public:
 		{
 			return defaultValue;
 		}
-
 	}
 	
 private:
