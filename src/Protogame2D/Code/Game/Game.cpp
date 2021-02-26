@@ -16,6 +16,7 @@
 #include "Engine/Input/XboxController.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/UI/Widget.hpp"
+#include "Engine/UI/WidgetSlider.hpp"
 #include "Engine/UI/UIManager.hpp"
 #include "Engine/Math/AABB2.hpp"
 
@@ -115,6 +116,7 @@ bool Game::EndTurn( EventArgs const& args )
 bool Game::PlayCard( EventArgs const& args )
 {
 	PlayerBoard& playerBoard = m_currentGamestate->m_playerBoard;
+	Enemy& enemy = m_currentGamestate->m_enemy;
 
 	eCard cardType = (eCard)args.GetValue( "cardType", (int)eCard::Strike );
 	//Start death of card animation
@@ -123,11 +125,15 @@ bool Game::PlayCard( EventArgs const& args )
 	Widget* cardWidget = (Widget*)args.GetValue<std::uintptr_t>( "cardWidget", (std::uintptr_t)invalidWidget );
 
 	int cardCost = cardDef.GetCost();
+	int cardAttack = cardDef.GetAttack();
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
 		if( playerBoard.TryMoveCardFromHandToDiscardPile( cardType ) )
 		{
+			enemy.TakeDamage( cardAttack );
+
+
 			m_isUIDirty = true;
 			playerBoard.ConsumeEnergy( cardCost );
 			cardWidget->SetIsVisible( false );
@@ -151,6 +157,17 @@ void Game::UpdateUI()
 		MatchUIToGameState();
 	}
 	PlayerBoard const& playerBoard  = m_currentGamestate->m_playerBoard;
+	int playerHealth = playerBoard.m_playerHealth;
+	int playerMaxHealth = playerBoard.m_playerMaxHealth;
+	float playerHealthScale = (float)playerHealth/(float)playerMaxHealth;
+	m_playerHealthWidget->SetSliderValue( playerHealthScale );
+
+	Enemy const& enemy = m_currentGamestate->m_enemy;
+	int enemyHealth = enemy.m_enemyHealth;
+	int enemyMaxHealth = enemy.m_enemyMaxHealth;
+	float enemyHealthScale = (float)enemyHealth/(float)enemyMaxHealth;
+	m_enemyHealthWidget->SetSliderValue( enemyHealthScale );
+
 	int deckSize = playerBoard.GetDeckSize();
 	m_deckWidget->SetText( Stringf( "%i", deckSize ) );
 
@@ -177,7 +194,7 @@ void Game::MatchUIToGameState()
 		Widget* cardWidget = new Widget( *m_baseCardWidget );
 		cardWidget->SetPosition( slotCenter );
 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
-		cardWidget->SetTexture( cardDef.GetCardTexture(), m_highlightTexture, m_selectTexture );
+		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 	
 		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
 		eCard cardType = cardDef.GetCardType();
@@ -205,17 +222,38 @@ void Game::StartupUI()
 	Widget* rootWidget = m_UIManager->GetRootWidget();
 	GPUMesh* uiMesh = m_UIManager->GetUIMesh();
 
+	Texture* backgroundTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/background.jpg" );
 	Texture* energyStoneTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/EnergyStone.png" );
 	Texture* deckTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Magic_card_back.jpg" );
 	Texture* buttonTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/button-icon.jpg" );
 	//Texture* strikeTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Strike_r.png" );
-	m_highlightTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
-	m_selectTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
+	m_cyanTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
+	m_redTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
+	m_greenTexture = g_theRenderer->CreateTextureFromColor( Rgba8::GREEN );
 	Texture* handTexture = g_theRenderer->CreateTextureFromColor( Rgba8::SandyTan );
+
+
+	rootWidget->SetTexture( backgroundTexture, nullptr, nullptr );
+	rootWidget->SetIsVisible( true );
 
 	std::string testEvent = "help";
 	AABB2 screenBounds = m_UIManager->GetScreenBounds();
 
+
+
+	Vec3 healthScale = Vec3( 2.f, 0.2f, 1.f );
+	Transform playerHealthTransform = Transform();
+	playerHealthTransform.m_scale = healthScale;
+	playerHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.3f, 0.5f ) );
+	m_playerHealthWidget = new WidgetSlider( uiMesh, playerHealthTransform );
+	m_playerHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
+	rootWidget->AddChild( m_playerHealthWidget );
+
+	Transform enemyHealthTransform = playerHealthTransform;
+	enemyHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.5f ) );
+	m_enemyHealthWidget = new WidgetSlider( uiMesh, enemyHealthTransform );
+	m_enemyHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
+	rootWidget->AddChild( m_enemyHealthWidget );
 
 	//Base card
 	Vec3 baseCardScale = Vec3( 2.f, 2.5f, 1.f );
@@ -230,7 +268,8 @@ void Game::StartupUI()
 	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.2f ) );
 	handTransform.m_scale = handScale;
 	m_handWidget = new Widget( uiMesh, handTransform );
-	m_handWidget->SetTexture( handTexture, nullptr, nullptr );
+	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );
+	m_handWidget->SetIsVisible( false );
 	rootWidget->AddChild( m_handWidget );
 
 // 	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
@@ -287,7 +326,7 @@ void Game::StartupUI()
 	deckTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.05f, 0.1f ) );
 	deckTransform.m_scale = deckScale;
 	Widget* deckWidget = new Widget( uiMesh, deckTransform );
-	deckWidget->SetTexture( deckTexture, m_highlightTexture, m_selectTexture );
+	deckWidget->SetTexture( deckTexture, m_cyanTexture, m_redTexture );
 	deckWidget->SetCanHover( true );
 	deckWidget->SetText( "Hello" );
 	deckWidget->SetTextSize( 0.1f );
@@ -295,7 +334,7 @@ void Game::StartupUI()
 	m_deckWidget = deckWidget;
 
 	m_energyWidget = new Widget( *deckWidget );
-	m_energyWidget->SetTexture( energyStoneTexture, m_highlightTexture, m_selectTexture );
+	m_energyWidget->SetTexture( energyStoneTexture, m_cyanTexture, m_redTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
 	rootWidget->AddChild( m_energyWidget );
 
@@ -312,7 +351,7 @@ void Game::StartupUI()
 	m_endTurnWidget->SetEventToFire( "endTurn" );
 	m_endTurnWidget->SetText( "End Turn" );
 	m_endTurnWidget->SetTextSize( 0.1f );
-	m_endTurnWidget->SetTexture( buttonTexture, m_highlightTexture, m_selectTexture );
+	m_endTurnWidget->SetTexture( buttonTexture, m_cyanTexture, m_redTexture );
 	rootWidget->AddChild( m_endTurnWidget );
 
 	MatchUIToGameState();

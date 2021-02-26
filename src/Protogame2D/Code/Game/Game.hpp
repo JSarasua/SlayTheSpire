@@ -11,6 +11,7 @@
 
 class Clock;
 class Widget;
+class WidgetSlider;
 class UIManager;
 class GameState;
 
@@ -50,8 +51,9 @@ private:
 	Camera m_camera;
 	Vec2 m_cameraPosition;
 	Texture* m_screenTexture = nullptr;
-	Texture const* m_highlightTexture;
-	Texture const* m_selectTexture;
+	Texture const* m_cyanTexture = nullptr;
+	Texture const* m_redTexture = nullptr;
+	Texture const* m_greenTexture = nullptr;
 
 	GameState* m_currentGamestate = nullptr;
 
@@ -61,6 +63,8 @@ private:
 	Widget* m_handWidget = nullptr;
 	Widget* m_energyWidget = nullptr;
 	Widget* m_endTurnWidget = nullptr;
+	WidgetSlider* m_playerHealthWidget = nullptr;
+	WidgetSlider* m_enemyHealthWidget = nullptr;
 
 	bool m_isUIDirty = false;
 

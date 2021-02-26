@@ -34,7 +34,7 @@ public:
 	Widget( GPUMesh* mesh, Transform const& transform, Widget* parentWidget = nullptr );
 	~Widget();
 
-	void Render();
+	virtual void Render();
 
 	//Mutators
 	void TransformWidget( Transform const& transform );
@@ -79,7 +79,7 @@ private:
 	void FireHoverEvents();
 	void FireReleaseEvents();
 
-private:
+protected:
 	Widget* m_parentWidget = nullptr;
 	std::vector<Widget*> m_childWidgets;
 
