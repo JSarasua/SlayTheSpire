@@ -16,6 +16,7 @@ public:
 	void TransformBy( Transform const& transform );
 
 	Mat44 ToMatrix() const;
+	Mat44 ToMatrixNoTranslation() const;
 	Mat44 ToMatrixNoScale() const;
 	Mat44 ToMatrixWithoutWorldBasis() const;
 	Mat44 ToRotationMatrix() const;
