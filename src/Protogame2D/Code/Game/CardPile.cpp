@@ -31,6 +31,18 @@ void CardPile::ClearPile()
 	}
 }
 
+bool CardPile::Contains( eCard card ) const
+{
+	if( m_cards[card] > 0 )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 std::vector<eCard> CardPile::ToVector() const
 {
 	std::vector<eCard> cards;

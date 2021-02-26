@@ -11,6 +11,7 @@ public:
 	void RemoveCard( eCard card, int count = 1 );
 	void AddPile( CardPile const& cardPile );
 	void ClearPile();
+	bool Contains( eCard card ) const;
 	std::vector<eCard> ToVector() const;
 	int GetTotalSize() const;
 private:
