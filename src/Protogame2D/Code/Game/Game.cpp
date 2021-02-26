@@ -112,8 +112,44 @@ bool Game::EndTurn( EventArgs const& args )
 	return true;
 }
 
+bool Game::PlayCard( EventArgs const& args )
+{
+	PlayerBoard& playerBoard = m_currentGamestate->m_playerBoard;
+
+	eCard cardType = (eCard)args.GetValue( "cardType", (int)eCard::Strike );
+	//Start death of card animation
+	CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( cardType );
+	Widget* invalidWidget = nullptr;
+	Widget* cardWidget = (Widget*)args.GetValue<std::uintptr_t>( "cardWidget", (std::uintptr_t)invalidWidget );
+
+	int cardCost = cardDef.GetCost();
+
+	if( playerBoard.CanConsumeEnergy( cardCost ) )
+	{
+		if( playerBoard.TryMoveCardFromHandToDiscardPile( cardType ) )
+		{
+			m_isUIDirty = true;
+			playerBoard.ConsumeEnergy( cardCost );
+			cardWidget->SetIsVisible( false );
+			cardWidget->SetCanHover( false );
+			cardWidget->SetCanSelect( false );
+			cardWidget->SetCanDrag( false );
+			
+			return true;
+		}
+	}
+	m_isUIDirty = true;
+
+	return false;
+}
+
 void Game::UpdateUI()
 {
+	if( m_isUIDirty )
+	{
+		m_isUIDirty = false;
+		MatchUIToGameState();
+	}
 	PlayerBoard const& playerBoard  = m_currentGamestate->m_playerBoard;
 	int deckSize = playerBoard.GetDeckSize();
 	m_deckWidget->SetText( Stringf( "%i", deckSize ) );
@@ -132,7 +168,6 @@ void Game::MatchUIToGameState()
 	PlayerBoard const& playerBoard = m_currentGamestate->m_playerBoard;
 	m_handWidget->ClearChildren();
 
-
 	AABB2 handBounds = m_handWidget->GetLocalAABB2();
 	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
 	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
@@ -144,6 +179,13 @@ void Game::MatchUIToGameState()
 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_highlightTexture, m_selectTexture );
 	
+		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
+		eCard cardType = cardDef.GetCardType();
+		releaseArgs.SetValue( "cardType", (int)cardType );
+		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
+		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::PlayCard );
+
 		m_handWidget->AddChild( cardWidget );
 	}
 }

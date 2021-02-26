@@ -2,6 +2,7 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 void PlayerBoard::InitializePlayerBoard()
 {
@@ -66,6 +67,20 @@ void PlayerBoard::MoveDiscardPileToDeckAndShuffle()
 	m_discardPile.ClearPile();
 }
 
+bool PlayerBoard::TryMoveCardFromHandToDiscardPile( eCard card )
+{
+	if( m_hand.Contains( card ) )
+	{
+		m_hand.RemoveCard( card );
+		m_discardPile.AddCard( card );
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void PlayerBoard::DiscardHand()
 {
 	m_discardPile.AddPile( m_hand );
@@ -112,6 +127,12 @@ void PlayerBoard::DrawHand()
 	DrawCard();
 	DrawCard();
 	DrawCard();
+}
+
+void PlayerBoard::ConsumeEnergy( int energyToConsume )
+{
+	m_playerEnergy -= energyToConsume;
+	m_playerEnergy = MaxInt( m_playerEnergy, 0 );
 }
 
 int PlayerBoard::GetDeckSize() const

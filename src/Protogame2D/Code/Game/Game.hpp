@@ -27,6 +27,7 @@ public:
 	void Render();
 
 	bool EndTurn( EventArgs const& args );
+	bool PlayCard( EventArgs const& args );
 
 private:
 	void UpdateUI();
@@ -60,6 +61,8 @@ private:
 	Widget* m_handWidget = nullptr;
 	Widget* m_energyWidget = nullptr;
 	Widget* m_endTurnWidget = nullptr;
+
+	bool m_isUIDirty = false;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

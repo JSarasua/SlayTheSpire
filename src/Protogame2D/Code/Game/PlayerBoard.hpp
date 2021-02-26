@@ -19,10 +19,15 @@ public:
 	void RemoveCardFromDeck( eCard card );
 	void RemoveCardFromDiscardPile( eCard card );
 	void MoveDiscardPileToDeckAndShuffle();
+	bool TryMoveCardFromHandToDiscardPile( eCard card );
 	void DiscardHand();
 	void ShuffleDeck();
 	void DrawCard();
 	void DrawHand(); //5 cards
+
+	bool CanConsumeEnergy( int energyToConsume ) const { return energyToConsume <= m_playerEnergy; }
+	void ConsumeEnergy( int energyToConsume );
+	void ResetEnergy() { m_playerEnergy = m_playerMaxEnergy; }
 
 	int GetDeckSize() const;
 	int GetHandSize() const;
