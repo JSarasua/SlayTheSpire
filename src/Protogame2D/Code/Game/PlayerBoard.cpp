@@ -17,9 +17,9 @@ void PlayerBoard::InitializePlayerBoard()
 	m_deck.push_back( eCard::Strike );
 	m_deck.push_back( eCard::Strike );
 	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Block );
-	m_deck.push_back( eCard::Block );
-	m_deck.push_back( eCard::Block );
+	m_deck.push_back( eCard::Defend );
+	m_deck.push_back( eCard::Defend );
+	m_deck.push_back( eCard::Defend );
 
 	ShuffleDeck();
 
@@ -62,6 +62,8 @@ void PlayerBoard::MoveDiscardPileToDeckAndShuffle()
 	std::vector<eCard> discardVector = m_discardPile.ToVector();
 	m_deck.insert( m_deck.end(), discardVector.begin(), discardVector.end() );
 	ShuffleDeck();
+
+	m_discardPile.ClearPile();
 }
 
 void PlayerBoard::DiscardHand()
@@ -125,5 +127,10 @@ int PlayerBoard::GetHandSize() const
 int PlayerBoard::GetDiscardPileSize() const
 {
 	return m_discardPile.GetTotalSize();
+}
+
+std::vector<eCard> PlayerBoard::GetHandAsVector() const
+{
+	return m_hand.ToVector();
 }
 

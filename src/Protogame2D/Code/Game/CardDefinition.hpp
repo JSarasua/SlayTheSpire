@@ -5,14 +5,14 @@ class Texture;
 enum eCard
 {
 	Strike,
-	Block,
+	Defend,
 	NUM_CARDS
 };
 
 class CardDefinition
 {
 private:
-	CardDefinition( int costToPlay, int attack, int block, Texture* texture );
+	CardDefinition( int costToPlay, int attack, int block, Texture const* texture );
 public:
 	CardDefinition() = default;
 	~CardDefinition() {}
@@ -30,5 +30,5 @@ private:
 	int m_attack = 0;
 	int m_block = 0;
 
-	Texture* m_texture = nullptr;
+	Texture const* m_texture = nullptr;
 };
