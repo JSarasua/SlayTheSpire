@@ -240,6 +240,10 @@ bool Widget::UpdateHovered( Vec2 const& point )
 {
 	m_currentMousePosition = point;
 	m_isHovered = IsPointInside( point ) && m_canHover;
+	if( m_isHovered )
+	{
+		FireHoverEvents();
+	}
 	if( m_isSelected )
 	{
 		//Mouse Offset is in World space
@@ -291,14 +295,16 @@ void Widget::UpdateDrag()
 
 void Widget::CheckInput()
 {
+	m_wasSelected = m_isSelected;
+
 	KeyButtonState const& leftMouseButton = g_theInput->GetMouseButton(LeftMouseButton);
 
 
 	if( leftMouseButton.WasJustPressed() && m_isHovered && m_canSelect )
 	{
 		m_isSelected = true;
-		g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
-		g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
+
+		FireSelectEvents();
 	}
 	if( leftMouseButton.IsPressed() && m_isHovered )
 	{
@@ -307,6 +313,12 @@ void Widget::CheckInput()
 	{
 		m_isSelected = false;
 		m_mouseOffset = s_invalidMousePosition;
+		
+
+		if( !m_isSelected && m_wasSelected )
+		{
+			FireReleaseEvents();
+		}
 	}
 
 	for( Widget* childWidget : m_childWidgets )
@@ -360,5 +372,22 @@ AABB2 Widget::GetLocalAABB2() const
 
 	AABB2 localAABB = AABB2( localBottomLeft, localTopRight );
 	return localAABB;
+}
+
+void Widget::FireSelectEvents()
+{
+	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
+	g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
+	m_selectDelegate.Invoke( m_selectArgs );
+}
+
+void Widget::FireHoverEvents()
+{
+	m_hoverDelegate.Invoke( m_hoverArgs );
+}
+
+void Widget::FireReleaseEvents()
+{
+	m_releaseDelegate.Invoke( m_releaseArgs );
 }
 

@@ -3,6 +3,8 @@
 #include "Engine/Math/OBB2.hpp"
 #include "Engine/Math/Transform.hpp"
 #include "Engine/UI/UIState.hpp"
+#include "Engine/Core/EventSystem.hpp"
+#include "Engine/Core/Delegate.hpp"
 #include <vector>
 #include <string>
 #include <map>
@@ -42,6 +44,7 @@ public:
 	void SetCanDrag( bool canDrag ) { m_canDrag = canDrag; }
 	void SetCanHover( bool canHover ) { m_canHover = canHover; }
 	void SetCanSelect( bool canSelect ) { m_canSelect = canSelect; }
+	void SetIsVisible( bool isVisible ) { m_isVisible = isVisible; }
 	void RemoveHoverAndSelected();
 	void SetPosition( Vec2 const& position ) { m_widgetTransform.m_position = position; }
 	void SetText( std::string const& text ) { m_text = text; }
@@ -72,6 +75,11 @@ public:
 	bool GetIsSelected() const { return m_isSelected; }
 
 private:
+	void FireSelectEvents();
+	void FireHoverEvents();
+	void FireReleaseEvents();
+
+private:
 	Widget* m_parentWidget = nullptr;
 	std::vector<Widget*> m_childWidgets;
 
@@ -89,6 +97,7 @@ private:
 	bool m_isVisible = false;
 	bool m_isHovered = false;
 	bool m_isSelected = false;
+	bool m_wasSelected = false;
 	bool m_canDrag = false;
 	bool m_canSelect = true;
 	bool m_canHover= true;
@@ -99,4 +108,13 @@ private:
 
 	UIState* m_currentState = nullptr;
 	std::map< std::string, UIState > m_states;
+
+public:
+	EventArgs m_selectArgs;
+	EventArgs m_releaseArgs;
+	EventArgs m_hoverArgs;
+
+	Delegate<EventArgs const&> m_selectDelegate;
+	Delegate<EventArgs const&> m_releaseDelegate;
+	Delegate<EventArgs const&> m_hoverDelegate;
 };
