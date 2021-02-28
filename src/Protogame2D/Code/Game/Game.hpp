@@ -1,5 +1,4 @@
 #pragma once
-#include "Game/Entity.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/NamedStrings.hpp"

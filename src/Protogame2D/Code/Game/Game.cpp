@@ -230,7 +230,7 @@ void Game::StartupUI()
 	m_cyanTexture = g_theRenderer->CreateTextureFromColor( Rgba8::CYAN );
 	m_redTexture = g_theRenderer->CreateTextureFromColor( Rgba8::RED );
 	m_greenTexture = g_theRenderer->CreateTextureFromColor( Rgba8::GREEN );
-	Texture* handTexture = g_theRenderer->CreateTextureFromColor( Rgba8::SandyTan );
+	//Texture* handTexture = g_theRenderer->CreateTextureFromColor( Rgba8::SandyTan );
 
 
 	rootWidget->SetTexture( backgroundTexture, nullptr, nullptr );

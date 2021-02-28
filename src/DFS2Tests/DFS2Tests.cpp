@@ -2,7 +2,6 @@
 #include "CppUnitTest.h"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/vec2.hpp"
-#include "Game/Entity.hpp"
 #include "Engine/UI/Widget.hpp"
 #include "Engine/Math/Transform.hpp"
 
