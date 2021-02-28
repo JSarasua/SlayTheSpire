@@ -4,15 +4,58 @@
 #include "Engine/Math/vec2.hpp"
 #include "Engine/UI/Widget.hpp"
 #include "Engine/Math/Transform.hpp"
+#include "Engine/Core/EngineCommon.hpp"
+#include "Game/GameCommon.hpp"
+#include "Engine/UI/UIManager.hpp"
+#include "Engine/Renderer/RenderContext.hpp"
+#include "Game/CardPile.hpp"
+#include "Engine/Input/InputSystem.hpp"
+
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+
+TEST_MODULE_INITIALIZE( InitializeUIManager )
+{
+// 	g_theRenderer = nullptr;
+	g_theInput = new InputSystem();
+	g_theEventSystem = new EventSystem();
+	g_theWindow = new Window();
+	g_theWindow->Open( "Window", 16.f/9.f, 1.f );
+	g_theWindow->SetInputSystem( g_theInput );
+	g_theWindow->SetEventSystem( g_theEventSystem );
+	g_theInput->Startup( g_theWindow );
+	g_theRenderer = new RenderContext();
+	g_theRenderer->StartUp( g_theWindow );
+ 	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
+	g_theUIManager->Startup();
+}
+
+TEST_MODULE_CLEANUP( CleanupUIManager )
+{
+	delete g_theUIManager;
+
+	g_theRenderer->Shutdown();
+	delete g_theRenderer;
+	g_theInput->Shutdown();
+	delete g_theInput;
+
+	g_theWindow->Close();
+	delete g_theWindow;
+	g_theWindow = nullptr;
+}
+
 namespace DFS2Tests
 {
+
 	TEST_CLASS(DFS2Tests)
 	{
 	public:
 		float epsilonValue = 0.001f;
+		DFS2Tests()
+		{
+			
+		}
 
 		TEST_METHOD( DistanceTest1 )
 		{
@@ -43,7 +86,7 @@ namespace DFS2Tests
 
 		AABB2 testScreenBounds = AABB2( -5.f, -5.f, 5.f, 5.f );
 		AABB2 uiBounds = AABB2( Vec2( -0.5f, -0.5f ), Vec2( 0.5f, 0.5f ) );
-		Widget rootWidget = Widget( nullptr, testScreenBounds );
+		Widget rootWidget = Widget( testScreenBounds );
 		
 		//Test Transforming Widget]
 		TEST_METHOD( WidgetRootTransformTestInside )
@@ -63,7 +106,7 @@ namespace DFS2Tests
 			Transform childTransform = Transform();
 			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
 			childTransform.m_scale = scale;
-			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
+			Widget* childWidget =  new Widget( childTransform, nullptr );
 			rootWidget.AddChild( childWidget );
 
 			bool childPointInside = childWidget->IsPointInside( Vec2( -4.49f, -4.49f ) );
@@ -78,7 +121,7 @@ namespace DFS2Tests
 			Transform childTransform = Transform();
 			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.6f, 0.5f ) );
 			childTransform.m_scale = scale;
-			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
+			Widget* childWidget =  new Widget( childTransform, nullptr );
 			rootWidget.AddChild( childWidget );
 
 			bool childPointInside = childWidget->IsPointInside( Vec2( 1.5f, 0.45f ) );
@@ -93,7 +136,7 @@ namespace DFS2Tests
 			Transform childTransform = Transform();
 			childTransform.m_position = testScreenBounds.GetPointAtUV( Vec2( 0.1f, 0.1f ) );
 			childTransform.m_scale = scale;
-			Widget* childWidget =  new Widget( nullptr, childTransform, nullptr );
+			Widget* childWidget =  new Widget( childTransform, nullptr );
 			rootWidget.AddChild( childWidget );
 
 
