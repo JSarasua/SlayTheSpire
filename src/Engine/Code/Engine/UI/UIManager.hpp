@@ -13,6 +13,8 @@ public:
 	UIManager( Vec2 screenDimensions, RenderContext* contextToUse );
 	~UIManager();
 
+
+	void Startup();
 	void Render();
 	void Update( float deltaSeconds );
 	Widget* GetRootWidget() { return m_rootWidget; }

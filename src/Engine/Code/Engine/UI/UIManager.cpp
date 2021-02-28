@@ -25,10 +25,6 @@ UIManager::UIManager( Vec2 screenDimensions, RenderContext* contextToUse ) :
 	m_UIMesh->UpdateVertices( uiVerts );
 	m_UIMesh->UpdateIndices( uiIndices );
 
-	m_rootWidget = new Widget( m_UIMesh, m_screenBounds );
-	m_rootWidget->SetCanSelect( false );
-	m_rootWidget->SetCanHover( false );
-
 	Rgba8 clearColor = Rgba8::BLACK;
 	m_camera.SetClearMode( CLEAR_COLOR_BIT | CLEAR_DEPTH_BIT, clearColor, 0.f, 0 );
 }
@@ -46,6 +42,14 @@ UIManager::~UIManager()
 		delete m_UIMesh;
 		m_UIMesh = nullptr;
 	}
+}
+
+void UIManager::Startup()
+{
+	m_rootWidget = new Widget( m_screenBounds );
+	m_rootWidget->SetCanSelect( false );
+	m_rootWidget->SetCanHover( false );
+
 }
 
 void UIManager::Render()

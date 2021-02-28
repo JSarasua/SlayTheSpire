@@ -3,8 +3,8 @@
 #include "Engine/Renderer/RenderContext.hpp"
 #include "Engine/Renderer/GPUMesh.hpp"
 
-WidgetSlider::WidgetSlider( GPUMesh* mesh, Transform const& transform, Widget* parentWidget /*= nullptr */ ) :
-	Widget( mesh, transform, parentWidget )
+WidgetSlider::WidgetSlider( Transform const& transform, Widget* parentWidget /*= nullptr */ ) :
+	Widget( transform, parentWidget )
 {}
 
 void WidgetSlider::Render()

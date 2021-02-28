@@ -44,7 +44,6 @@ private:
 
 
 private:
-	UIManager* m_UIManager = nullptr;
 	Clock* m_gameClock = nullptr;
 	Camera m_UICamera;
 	Camera m_camera;

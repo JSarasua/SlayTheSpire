@@ -48,10 +48,10 @@ void Game::Startup()
 
 void Game::Shutdown()
 {
-	if( m_UIManager )
+	if( g_theUIManager )
 	{
-		delete m_UIManager;
-		m_UIManager = nullptr;
+		delete g_theUIManager;
+		g_theUIManager = nullptr;
 	}
 
 	if( m_gameClock )
@@ -85,7 +85,7 @@ void Game::Update()
 	}
 
 	UpdateUI();
-	m_UIManager->Update( dt );
+	g_theUIManager->Update( dt );
 
 	//UpdateCamera( dt );
 }
@@ -218,9 +218,10 @@ void Game::StartupCardGame()
 
 void Game::StartupUI()
 {
-	m_UIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
-	Widget* rootWidget = m_UIManager->GetRootWidget();
-	GPUMesh* uiMesh = m_UIManager->GetUIMesh();
+	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
+	g_theUIManager->Startup();
+
+	Widget* rootWidget = g_theUIManager->GetRootWidget();
 
 	Texture* backgroundTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/background.jpg" );
 	Texture* energyStoneTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/EnergyStone.png" );
@@ -237,7 +238,7 @@ void Game::StartupUI()
 	rootWidget->SetIsVisible( true );
 
 	std::string testEvent = "help";
-	AABB2 screenBounds = m_UIManager->GetScreenBounds();
+	AABB2 screenBounds = g_theUIManager->GetScreenBounds();
 
 
 
@@ -245,13 +246,13 @@ void Game::StartupUI()
 	Transform playerHealthTransform = Transform();
 	playerHealthTransform.m_scale = healthScale;
 	playerHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.3f, 0.5f ) );
-	m_playerHealthWidget = new WidgetSlider( uiMesh, playerHealthTransform );
+	m_playerHealthWidget = new WidgetSlider( playerHealthTransform );
 	m_playerHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
 	rootWidget->AddChild( m_playerHealthWidget );
 
 	Transform enemyHealthTransform = playerHealthTransform;
 	enemyHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.5f ) );
-	m_enemyHealthWidget = new WidgetSlider( uiMesh, enemyHealthTransform );
+	m_enemyHealthWidget = new WidgetSlider( enemyHealthTransform );
 	m_enemyHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
 	rootWidget->AddChild( m_enemyHealthWidget );
 
@@ -259,7 +260,7 @@ void Game::StartupUI()
 	Vec3 baseCardScale = Vec3( 2.f, 2.5f, 1.f );
 	Transform baseTransform = Transform();
 	baseTransform.m_scale = baseCardScale;
-	m_baseCardWidget = new Widget( uiMesh, baseTransform );
+	m_baseCardWidget = new Widget( baseTransform );
 	m_baseCardWidget->SetCanDrag( true );
 
 	//Hand widget
@@ -267,7 +268,7 @@ void Game::StartupUI()
 	Transform handTransform = Transform();
 	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.2f ) );
 	handTransform.m_scale = handScale;
-	m_handWidget = new Widget( uiMesh, handTransform );
+	m_handWidget = new Widget( handTransform );
 	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );
 	m_handWidget->SetIsVisible( false );
 	rootWidget->AddChild( m_handWidget );
@@ -325,7 +326,7 @@ void Game::StartupUI()
 	Transform deckTransform = Transform();
 	deckTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.05f, 0.1f ) );
 	deckTransform.m_scale = deckScale;
-	Widget* deckWidget = new Widget( uiMesh, deckTransform );
+	Widget* deckWidget = new Widget( deckTransform );
 	deckWidget->SetTexture( deckTexture, m_cyanTexture, m_redTexture );
 	deckWidget->SetCanHover( true );
 	deckWidget->SetText( "Hello" );
@@ -346,7 +347,7 @@ void Game::StartupUI()
 	Transform endTurnTransform = Transform();
 	endTurnTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.95f, 0.25f ) );
 	endTurnTransform.m_scale = Vec3( 1.5f, 0.75f, 1.f );
-	m_endTurnWidget = new Widget( uiMesh, endTurnTransform );
+	m_endTurnWidget = new Widget( endTurnTransform );
 	m_endTurnWidget->SetCanSelect( true );
 	m_endTurnWidget->SetEventToFire( "endTurn" );
 	m_endTurnWidget->SetText( "End Turn" );
@@ -384,7 +385,7 @@ void Game::RenderGame()
 
 void Game::RenderUI()
 {
-	m_UIManager->Render();
+	g_theUIManager->Render();
 }
 
 void Game::CheckButtonPresses(float deltaSeconds)

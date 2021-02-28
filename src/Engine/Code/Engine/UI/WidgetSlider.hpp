@@ -5,7 +5,7 @@
 class WidgetSlider : public Widget
 {
 public:
-	WidgetSlider( GPUMesh* mesh, Transform const& transform, Widget* parentWidget = nullptr );
+	WidgetSlider( Transform const& transform, Widget* parentWidget = nullptr );
 	virtual void Render() override;
 
 	void SetSliderValue( float sliderValueZeroToOne );

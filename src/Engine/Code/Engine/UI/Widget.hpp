@@ -30,8 +30,8 @@ class Widget
 {
 public:
 	Widget();
-	Widget( GPUMesh* mesh, AABB2 screenBounds ); //Root Parent Widget
-	Widget( GPUMesh* mesh, Transform const& transform, Widget* parentWidget = nullptr );
+	Widget( AABB2 screenBounds ); //Root Parent Widget
+	Widget( Transform const& transform, Widget* parentWidget = nullptr );
 	~Widget();
 
 	virtual void Render();

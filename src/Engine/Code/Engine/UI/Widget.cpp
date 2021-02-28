@@ -5,17 +5,19 @@
 #include "Engine/Math/MatrixUtils.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/UI/UIManager.hpp"
 
-Widget::Widget( GPUMesh* mesh, Transform const& transform, Widget* parentWidget) :
-	m_mesh( mesh ),
+Widget::Widget( Transform const& transform, Widget* parentWidget) :
 	m_widgetTransform( transform ),
 	m_parentWidget( parentWidget ),
 	m_isVisible( true )
-{}
-
-Widget::Widget( GPUMesh* mesh, AABB2 screenBounds ) :
-	m_mesh( mesh )
 {
+	m_mesh = g_theUIManager->GetUIMesh();
+}
+
+Widget::Widget( AABB2 screenBounds )
+{
+	m_mesh = g_theUIManager->GetUIMesh();
 	Vec2 dimensions = screenBounds.GetDimensions();
 	Vec2 center = screenBounds.GetCenter();
 
