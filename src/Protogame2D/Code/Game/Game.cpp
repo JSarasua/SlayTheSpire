@@ -213,6 +213,7 @@ void Game::StartupCardGame()
 	m_currentGamestate = new GameState();
 
 	PlayerBoard& player = m_currentGamestate->m_playerBoard;
+	player.InitializePlayerBoard();
 	player.DrawHand();
 }
 

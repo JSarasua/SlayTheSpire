@@ -52,6 +52,7 @@ public:
 	void ClearChildren();
 
 	//Accessors
+	Transform GetTransform() const { return m_widgetTransform; }
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
 	Mat44 GetParentInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrixScaleOnlySelf() const;

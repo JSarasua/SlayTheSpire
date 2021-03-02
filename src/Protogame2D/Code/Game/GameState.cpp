@@ -2,6 +2,6 @@
 
 GameState::GameState()
 {
-	m_playerBoard.InitializePlayerBoard();
+	//m_playerBoard.InitializePlayerBoard();
 }
 

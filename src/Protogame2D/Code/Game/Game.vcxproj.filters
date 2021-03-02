@@ -52,6 +52,9 @@
     <ClCompile Include="Entity.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -88,6 +91,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="Entity.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.hpp">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>

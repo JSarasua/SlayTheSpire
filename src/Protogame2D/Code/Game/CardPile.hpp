@@ -7,6 +7,8 @@
 class CardPile
 {
 public:
+	CardPile() = default;
+
 	void AddCard( eCard card, int count = 1 );
 	void RemoveCard( eCard card, int count = 1 );
 	void AddPile( CardPile const& cardPile );
