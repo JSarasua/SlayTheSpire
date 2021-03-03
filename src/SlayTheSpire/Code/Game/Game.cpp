@@ -40,8 +40,11 @@ void Game::Startup()
 	g_theRenderer->Setup( m_gameClock );
 	m_screenTexture = g_theRenderer->CreateTextureFromColor( Rgba8::BLACK, IntVec2(1920,1080) );
 
-	StartupUI();
+	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
+	g_theUIManager->Startup();
+
 	StartupCardGame();
+	StartupUI();
 	MatchUIToGameState();
 
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
@@ -233,9 +236,6 @@ void Game::StartupCardGame()
 
 void Game::StartupUI()
 {
-	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
-	g_theUIManager->Startup();
-
 	Widget* rootWidget = g_theUIManager->GetRootWidget();
 
 	Texture* backgroundTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/background.jpg" );
@@ -336,6 +336,7 @@ void Game::StartupUI()
 	m_energyWidget = new Widget( *deckWidget );
 	m_energyWidget->SetTexture( energyStoneTexture, m_cyanTexture, m_redTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
+	m_energyWidget->SetCanHover( false );
 	rootWidget->AddChild( m_energyWidget );
 
 	Widget* discardWidget = new Widget( *deckWidget );
