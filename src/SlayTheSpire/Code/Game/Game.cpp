@@ -87,6 +87,7 @@ void Game::Update()
 
 	UpdateUI();
 	g_theUIManager->Update( dt );
+	m_currentGamestate->Update( dt );
 
 	//UpdateCamera( dt );
 }
@@ -104,8 +105,13 @@ void Game::Render()
 bool Game::EndTurn( EventArgs const& args )
 {
 	UNUSED( args );
+	Player& player = m_currentGamestate->m_player;
+	Enemy& enemy = m_currentGamestate->m_enemy;
 
-	PlayerBoard& playerBoard = m_currentGamestate->m_playerBoard;
+	player.ResetBlock();
+	enemy.ResetBlock();
+
+	PlayerBoard& playerBoard = player.m_playerBoard;
 	playerBoard.DiscardHand();
 	playerBoard.DrawHand();
 	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
@@ -116,7 +122,8 @@ bool Game::EndTurn( EventArgs const& args )
 
 bool Game::PlayCard( EventArgs const& args )
 {
-	PlayerBoard& playerBoard = m_currentGamestate->m_playerBoard;
+	Player& player = m_currentGamestate->m_player;
+	PlayerBoard& playerBoard = player.m_playerBoard;
 	Enemy& enemy = m_currentGamestate->m_enemy;
 
 	eCard cardType = (eCard)args.GetValue( "cardType", (int)eCard::Strike );
@@ -127,12 +134,14 @@ bool Game::PlayCard( EventArgs const& args )
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
+	int cardBlock = cardDef.GetBlock();
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
 		if( playerBoard.TryMoveCardFromHandToDiscardPile( cardType ) )
 		{
 			enemy.TakeDamage( cardAttack );
+			player.GainBlock( cardBlock );
 
 
 			m_isUIDirty = true;
@@ -157,17 +166,7 @@ void Game::UpdateUI()
 		m_isUIDirty = false;
 		MatchUIToGameState();
 	}
-	PlayerBoard const& playerBoard  = m_currentGamestate->m_playerBoard;
-	int playerHealth = playerBoard.m_playerHealth;
-	int playerMaxHealth = playerBoard.m_playerMaxHealth;
-	float playerHealthScale = (float)playerHealth/(float)playerMaxHealth;
-	m_playerHealthWidget->SetSliderValue( playerHealthScale );
-
-	Enemy const& enemy = m_currentGamestate->m_enemy;
-	int enemyHealth = enemy.m_enemyHealth;
-	int enemyMaxHealth = enemy.m_enemyMaxHealth;
-	float enemyHealthScale = (float)enemyHealth/(float)enemyMaxHealth;
-	m_enemyHealthWidget->SetSliderValue( enemyHealthScale );
+	PlayerBoard const& playerBoard  = m_currentGamestate->m_player.m_playerBoard;
 
 	int deckSize = playerBoard.GetDeckSize();
 	m_deckWidget->SetText( Stringf( "%i", deckSize ) );
@@ -183,7 +182,7 @@ void Game::UpdateUI()
 
 void Game::MatchUIToGameState()
 {
-	PlayerBoard const& playerBoard = m_currentGamestate->m_playerBoard;
+	PlayerBoard const& playerBoard = m_currentGamestate->m_player.m_playerBoard;
 	m_handWidget->ClearChildren();
 
 	AABB2 handBounds = m_handWidget->GetLocalAABB2();
@@ -213,9 +212,23 @@ void Game::StartupCardGame()
 	CardDefinition::InitializeCardDefinitions();
 	m_currentGamestate = new GameState();
 
-	PlayerBoard& player = m_currentGamestate->m_playerBoard;
-	player.InitializePlayerBoard();
-	player.DrawHand();
+	Enemy& enemy = m_currentGamestate->m_enemy;
+	Player& player = m_currentGamestate->m_player;
+	PlayerBoard& playerBoard = player.m_playerBoard;
+	playerBoard.InitializePlayerBoard();
+	playerBoard.DrawHand();
+
+	Widget* rootWidget = g_theUIManager->GetRootWidget();
+	player.SetParentWidget( rootWidget );
+
+	AABB2 screenBounds = g_theUIManager->GetScreenBounds();
+	Vec2 playerPosition = screenBounds.GetPointAtUV( Vec2( 0.3f, 0.45f ) );
+	player.SetEntityPositionRelativeToParent( playerPosition );
+
+	Vec2 enemyPosition = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.45f ) );
+	enemy.SetParentWidget( rootWidget );
+	enemy.SetEntityPositionRelativeToParent( enemyPosition );
+
 }
 
 void Game::StartupUI()
@@ -242,22 +255,6 @@ void Game::StartupUI()
 	std::string testEvent = "help";
 	AABB2 screenBounds = g_theUIManager->GetScreenBounds();
 
-
-
-	Vec3 healthScale = Vec3( 2.f, 0.2f, 1.f );
-	Transform playerHealthTransform = Transform();
-	playerHealthTransform.m_scale = healthScale;
-	playerHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.3f, 0.5f ) );
-	m_playerHealthWidget = new WidgetSlider( playerHealthTransform );
-	m_playerHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
-	rootWidget->AddChild( m_playerHealthWidget );
-
-	Transform enemyHealthTransform = playerHealthTransform;
-	enemyHealthTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.5f ) );
-	m_enemyHealthWidget = new WidgetSlider( enemyHealthTransform );
-	m_enemyHealthWidget->SetBackgroundAndFillTextures( m_redTexture, m_greenTexture );
-	rootWidget->AddChild( m_enemyHealthWidget );
-
 	//Base card
 	Vec3 baseCardScale = Vec3( 2.f, 2.5f, 1.f );
 	Transform baseTransform = Transform();
@@ -268,7 +265,7 @@ void Game::StartupUI()
 	//Hand widget
 	Vec3 handScale = Vec3( 12.f, 3.f, 1.f );
 	Transform handTransform = Transform();
-	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.2f ) );
+	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.1f ) );
 	handTransform.m_scale = handScale;
 	m_handWidget = new Widget( handTransform );
 	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );

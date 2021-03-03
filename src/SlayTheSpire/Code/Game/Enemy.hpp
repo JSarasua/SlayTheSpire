@@ -1,15 +1,13 @@
 #pragma once
+#include "Game/Entity.hpp"
 
 class EnemyDefinition;
 
-class Enemy
+class Enemy : public Entity
 {
 public:
-	void TakeDamage( int damage );
+	Enemy();
 
 public:
 	EnemyDefinition const* m_enemyDef = nullptr;
-	int m_enemyHealth = 100;
-	int m_enemyMaxHealth = 100;
-	int m_enemyBlock = 0;
 };

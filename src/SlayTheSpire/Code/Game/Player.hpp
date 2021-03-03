@@ -12,6 +12,7 @@ public:
 		int maxHealth = 0 );
 
 	PlayerBoard& GetPlayerBoard() { return m_playerBoard; }
+
 public:
 	PlayerBoard m_playerBoard;
 };

@@ -20,6 +20,8 @@ Player::Player( Widget* parentWidget,
 
 Player::Player() : Entity(), m_playerBoard()
 {
-	m_playerBoard.InitializePlayerBoard();
+	Texture const* playerTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Ironclad.png" );
+	m_entityWidget->SetTexture( playerTexture, nullptr, nullptr );
+	//m_playerBoard.InitializePlayerBoard();
 }
 

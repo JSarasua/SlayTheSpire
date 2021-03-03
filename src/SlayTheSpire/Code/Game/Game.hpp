@@ -61,8 +61,6 @@ private:
 	Widget* m_handWidget = nullptr;
 	Widget* m_energyWidget = nullptr;
 	Widget* m_endTurnWidget = nullptr;
-	WidgetSlider* m_playerHealthWidget = nullptr;
-	WidgetSlider* m_enemyHealthWidget = nullptr;
 
 	bool m_isUIDirty = false;
 

@@ -16,14 +16,18 @@ public:
 	void SetParentWidget( Widget* parentWidget );
 
 	virtual void Update( float deltaSeconds );
+	void TakeDamage( int damage );
+	void GainBlock( int block ) { m_block += block; }
+	void ResetBlock() { m_block = 0; }
 
 protected:
-	int m_health = 0;
-	int m_maxHealth = 0;
+	int m_health = 80;
+	int m_maxHealth = 80;
 	int m_block = 0;
 
 	Widget* m_entityWidget = nullptr;
 	WidgetSlider* m_healthWidget = nullptr;
+	Widget* m_blockWidget = nullptr;
 	Widget* m_statusEffectsWidget = nullptr;
 
 	GameState* m_gameState = nullptr;

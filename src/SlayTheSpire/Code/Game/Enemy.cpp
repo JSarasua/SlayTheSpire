@@ -1,9 +1,13 @@
 #include "Game/Enemy.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Game/GameCommon.hpp"
+#include "Engine/UI/Widget.hpp"
+#include "Engine/Renderer/RenderContext.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
-void Enemy::TakeDamage( int damage )
+
+Enemy::Enemy() : Entity()
 {
-	m_enemyHealth -= damage;
-	m_enemyHealth = MaxInt( m_enemyHealth, 0 );
+	Texture const* enemyTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Cultist.png" );
+	m_entityWidget->SetTexture( enemyTexture, nullptr, nullptr );
 }
-
