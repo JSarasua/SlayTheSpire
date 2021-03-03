@@ -262,15 +262,7 @@ void Game::StartupUI()
 	m_baseCardWidget = new Widget( baseTransform );
 	m_baseCardWidget->SetCanDrag( true );
 
-	//Hand widget
-	Vec3 handScale = Vec3( 12.f, 3.f, 1.f );
-	Transform handTransform = Transform();
-	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.1f ) );
-	handTransform.m_scale = handScale;
-	m_handWidget = new Widget( handTransform );
-	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );
-	m_handWidget->SetIsVisible( false );
-	rootWidget->AddChild( m_handWidget );
+
 
 // 	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
 // 	Transform card1Transform = Transform();
@@ -354,6 +346,16 @@ void Game::StartupUI()
 	m_endTurnWidget->SetTextSize( 0.1f );
 	m_endTurnWidget->SetTexture( buttonTexture, m_cyanTexture, m_redTexture );
 	rootWidget->AddChild( m_endTurnWidget );
+
+	//Hand widget
+	Vec3 handScale = Vec3( 12.f, 3.f, 1.f );
+	Transform handTransform = Transform();
+	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.1f ) );
+	handTransform.m_scale = handScale;
+	m_handWidget = new Widget( handTransform );
+	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );
+	m_handWidget->SetIsVisible( false );
+	rootWidget->AddChild( m_handWidget );
 }
 
 void Game::CheckCollisions()
