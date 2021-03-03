@@ -11,7 +11,7 @@
 
 //InputSystem* g_theInput = nullptr;
 
-const char* APP_NAME = "SD3-A1: Protogame3D";	// ...becomes ??? (Change this per project!)
+const char* APP_NAME = "Slay the Spire";	// ...becomes ??? (Change this per project!)
 
 App::App()
 {
