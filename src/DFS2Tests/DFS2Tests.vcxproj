@@ -171,10 +171,7 @@
     <ProjectReference Include="..\Engine\Code\Engine\Engine.vcxproj">
       <Project>{d2c8c721-daae-43ad-a8b9-08c0ac80cf4b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Protogame2D\Code\Game\Game.vcxproj">
-      <Project>{08e45489-4f88-49f1-b726-946bfc9c2aec}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Protogame2D\UnitTestingGameLib\UnitTestingGameLib.vcxproj">
+    <ProjectReference Include="..\SlayTheSpire\UnitTestingGameLib\UnitTestingGameLib.vcxproj">
       <Project>{9daf83e8-20d0-4004-a151-c2ff6c8aeb11}</Project>
     </ProjectReference>
   </ItemGroup>
