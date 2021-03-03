@@ -46,6 +46,8 @@ Entity::Entity()
 	healthTransform.m_position.y -= 1.f;
 	m_healthWidget = new WidgetSlider( healthTransform );
 	m_healthWidget->SetBackgroundAndFillTextures( redTexture, greenTexture );
+	
+	m_entityWidget->AddChild( m_healthWidget );
 }
 
 void Entity::SetEntityPositionRelativeToParent( Vec2 const& positionRelativeToParent )

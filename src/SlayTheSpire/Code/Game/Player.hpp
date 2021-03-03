@@ -5,6 +5,7 @@
 class Player : public Entity
 {
 public:
+	Player();
 	Player( Widget* parentWidget, 
 		Vec2 const& positionRelativeToParent, 
 		GameState* gameState, 

@@ -40,8 +40,9 @@ void Game::Startup()
 	g_theRenderer->Setup( m_gameClock );
 	m_screenTexture = g_theRenderer->CreateTextureFromColor( Rgba8::BLACK, IntVec2(1920,1080) );
 
-	StartupCardGame();
 	StartupUI();
+	StartupCardGame();
+	MatchUIToGameState();
 
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
 }
@@ -355,8 +356,6 @@ void Game::StartupUI()
 	m_endTurnWidget->SetTextSize( 0.1f );
 	m_endTurnWidget->SetTexture( buttonTexture, m_cyanTexture, m_redTexture );
 	rootWidget->AddChild( m_endTurnWidget );
-
-	MatchUIToGameState();
 }
 
 void Game::CheckCollisions()

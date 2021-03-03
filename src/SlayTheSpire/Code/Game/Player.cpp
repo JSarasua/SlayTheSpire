@@ -18,3 +18,8 @@ Player::Player( Widget* parentWidget,
 	m_entityWidget->SetTexture( playerTexture, nullptr, nullptr );
 }
 
+Player::Player() : Entity(), m_playerBoard()
+{
+	m_playerBoard.InitializePlayerBoard();
+}
+
