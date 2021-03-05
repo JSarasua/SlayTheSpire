@@ -789,7 +789,7 @@ Texture* RenderContext::CreateDepthStencilTarget()
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	dsDesc.StencilEnable = false;
 
-
+	DX_SAFE_RELEASE( m_depthStencilState );
 	m_device->CreateDepthStencilState( &dsDesc, &m_depthStencilState );
 	m_context->OMSetDepthStencilState( m_depthStencilState, 1 );
 
@@ -1201,7 +1201,11 @@ void RenderContext::BeginCamera( Camera& camera )
 
 		for( uint rtvsIndex = 0; rtvsIndex < rtvCount; rtvsIndex++ )
 		{
-			m_context->ClearRenderTargetView( rtvs[rtvsIndex], clearFloats );
+			ID3D11RenderTargetView* rtv = rtvs[rtvsIndex];
+			if( rtv )
+			{
+				m_context->ClearRenderTargetView( rtv, clearFloats );
+			}
 		}
 
 	}
