@@ -30,6 +30,7 @@ public:
 	bool PlayCard( EventArgs const& args );
 
 private:
+	void InitializeDefinitions();
 	void UpdateUI();
 	void MatchUIToGameState();
 

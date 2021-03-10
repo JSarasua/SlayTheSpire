@@ -6,6 +6,8 @@
 #include "Game/PlayerBoard.hpp"
 #include "Game/Enemy.hpp"
 #include "Game/CardDefinition.hpp"
+#include "Game/StatusDefinition.hpp"
+#include "Game/EnemyDefinition.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
 #include "Engine/Time/Clock.hpp"
@@ -43,6 +45,7 @@ void Game::Startup()
 	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
 	g_theUIManager->Startup();
 
+	InitializeDefinitions();
 	StartupCardGame();
 	StartupUI();
 	MatchUIToGameState();
@@ -162,6 +165,13 @@ bool Game::PlayCard( EventArgs const& args )
 	return false;
 }
 
+void Game::InitializeDefinitions()
+{
+	StatusDefinition::InitializeStatusDefinitions();
+	EnemyDefinition::InitializeEnemyDefinitions();
+	CardDefinition::InitializeCardDefinitions();
+}
+
 void Game::UpdateUI()
 {
 	if( m_isUIDirty )
@@ -212,7 +222,6 @@ void Game::MatchUIToGameState()
 
 void Game::StartupCardGame()
 {
-	CardDefinition::InitializeCardDefinitions();
 	m_currentGamestate = new GameState();
 
 	Enemy& enemy = m_currentGamestate->m_enemy;
