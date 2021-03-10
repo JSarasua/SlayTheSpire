@@ -3,7 +3,7 @@
 
 enum eStatus
 {
-	INVALID_STATUS = -1,
+	INVALID_STATUS = 0,
 	Vulnerable,
 	Weak,
 	Ritual,

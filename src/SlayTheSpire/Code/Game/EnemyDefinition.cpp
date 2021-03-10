@@ -17,13 +17,18 @@ EnemyDefinition::EnemyDefinition( std::vector<EnemyMove> orderedMoves, std::vect
 
 void EnemyDefinition::InitializeEnemyDefinitions()
 {
-// 	std::vector<EnemyMove> cultistOrderedMoves;
-// 	cultistOrderedMoves( Buff, 0, 0, )
-// 	std::vector<EnemyMove> cultistMoves;
-// 	cultistMoves.emplace_back( Attack, 6, 0, 0, false, false );
-// 
-// 	Texture const* cultistTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Cultist.png" );
-// 	s_enemyDefs[Cultist] = EnemyDefinition( cultistMoves, 80, cultistTexture );
+	StatusDefinition const& invalidDef = StatusDefinition::GetStatusDefinitionByType( eStatus::INVALID_STATUS );
+ 	
+	std::vector<EnemyMove> cultistOrderedMoves;
+	StatusDefinition const& ritualDef = StatusDefinition::GetStatusDefinitionByType( Ritual );
+	EnemyMove ritualMove = EnemyMove( Buff, 0, 0, 0, false, false, &ritualDef );
+	cultistOrderedMoves.push_back( ritualMove );
+
+	std::vector<EnemyMove> cultistMoves;
+	EnemyMove attackMove = EnemyMove( Attack, 6, 0, 0, false, false, &invalidDef );
+	Texture const* cultistTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Cultist.png" );
+
+	s_enemyDefs[Cultist] = EnemyDefinition( cultistOrderedMoves, cultistMoves, 80, cultistTexture );
 }
 EnemyMove EnemyDefinition::GetRandomMove( RandomNumberGenerator& rng, int moveTurn )
 {

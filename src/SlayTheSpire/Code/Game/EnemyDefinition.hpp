@@ -28,7 +28,7 @@ public:
 	int m_strength = 0;
 	bool m_giveVulnerable = false;
 	bool m_giveWeak = false;
-	StatusDefinition const* m_statusDef;
+	StatusDefinition const* m_statusDef = nullptr;
 };
 
 class RandomNumberGenerator;

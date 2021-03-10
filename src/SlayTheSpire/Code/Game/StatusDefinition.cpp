@@ -14,6 +14,7 @@ void StatusDefinition::InitializeStatusDefinitions()
 	Texture* vulnerableTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Vulnerable.png" );
 	Texture* weakTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Weak.png" );
 	Texture* ritualTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Icon_Ritual.png" );
+	s_statusDefs[INVALID_STATUS] = StatusDefinition( INVALID_STATUS, nullptr, 0, 1.f, 1.f );
 	s_statusDefs[Vulnerable] = StatusDefinition( Vulnerable, vulnerableTexture, 0, 1.f, 1.5f );
 	s_statusDefs[Weak] = StatusDefinition( Weak, weakTexture, 0, 0.75f, 1.f );
 	s_statusDefs[Ritual] = StatusDefinition( Ritual, ritualTexture, 3, 1.f, 1.f );
