@@ -43,6 +43,8 @@ private:
 	void RenderUI();
 	void CheckButtonPresses(float deltaSeconds);
 
+	void DoEnemyTurn();
+
 
 private:
 	Clock* m_gameClock = nullptr;

@@ -113,15 +113,16 @@ bool Game::EndTurn( EventArgs const& args )
 {
 	UNUSED( args );
 	Player& player = m_currentGamestate->m_player;
-	Enemy& enemy = m_currentGamestate->m_enemy;
-
-	player.ResetBlock();
-	enemy.ResetBlock();
 
 	PlayerBoard& playerBoard = player.m_playerBoard;
 	playerBoard.DiscardHand();
 	playerBoard.DrawHand();
 	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+
+	DoEnemyTurn();
+
+	player.ResetBlock();
+
 
 	MatchUIToGameState();
 	return true;
@@ -649,4 +650,34 @@ void Game::CheckButtonPresses(float deltaSeconds)
 	}
 
 	//m_camera.TranslateRelativeToViewOnlyYaw( translator );
+}
+
+void Game::DoEnemyTurn()
+{
+	Player& player = m_currentGamestate->m_player;
+	Enemy& enemy = m_currentGamestate->m_enemy;
+
+	enemy.ResetBlock();
+	
+	EnemyMove const& move = enemy.GetEnemyMove();
+	eStatus status = move.m_statusDef->m_statusType;
+
+	enemy.UpdateStatuses();
+
+	if( status == Ritual )
+	{
+		enemy.AddStatus( status );
+	}
+	else if( status != INVALID_STATUS )
+	{
+		player.AddStatus( status );
+	}
+
+	int damage = move.m_damage;
+	damage = enemy.GetDamagePostStrength( damage );
+	int block = move.m_block;
+	player.TakeDamage( damage );
+	enemy.GainBlock( block );
+
+	enemy.UpdateEnemyMove( m_rand );
 }

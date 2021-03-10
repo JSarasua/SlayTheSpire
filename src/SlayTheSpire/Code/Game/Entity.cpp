@@ -62,7 +62,16 @@ Entity::Entity()
 	m_blockWidget->SetText( "0" );
 	m_blockWidget->SetTextSize( 0.4f );
 	m_healthWidget->AddChild( m_blockWidget );
-	//m_entityWidget->AddChild( m_statusEffectsWidget )
+
+	Transform statusTransform = Transform();
+	statusTransform.m_position = m_entityWidget->GetLocalAABB2().GetPointAtUV( Vec2( 0.f, -0.1f ) );
+	statusTransform.m_scale = Vec3( 0.5f, 0.5f, 1.f );
+	m_statusEffectsWidget = new Widget( statusTransform );
+	m_entityWidget->AddChild( m_statusEffectsWidget );
+	m_statusEffectsWidget->SetIsVisible( false );
+	m_statusEffectsWidget->SetCanHover( false );
+	m_statusEffectsWidget->SetCanSelect( false );
+	m_statusEffectsWidget->SetCanDrag( false );
 }
 
 Entity::~Entity()
@@ -122,5 +131,35 @@ void Entity::TakeDamage( int damage )
 
 	m_health -= mitigatedDamage;
 	m_health = MaxInt( m_health, 0 );
+}
+
+void Entity::AddStatus( eStatus status )
+{
+	StatusDefinition const& statusDef = StatusDefinition::GetStatusDefinitionByType( status );
+	Texture const* statusTexture = statusDef.m_statusTexture;
+
+	m_currentStatuses.push_back( status );
+
+	Transform statusTransform;
+	statusTransform.m_scale = Vec3( 0.5f, 0.5f, 1.f );
+	Widget* statusWidget = new Widget( statusTransform );
+	statusWidget->SetCanHover( false );
+	statusWidget->SetCanSelect( false );
+	statusWidget->SetCanDrag( false );
+	statusWidget->SetTexture( statusTexture, nullptr, nullptr );
+	m_statusEffectsWidget->AddChild( statusWidget );
+}
+
+void Entity::UpdateStatuses()
+{
+	for( eStatus& status : m_currentStatuses )
+	{
+		StatusDefinition const& statusDef = StatusDefinition::GetStatusDefinitionByType( status );
+
+		if( status == Ritual )
+		{
+			m_strength += statusDef.m_strengthPerTurn;
+		}
+	}
 }
 

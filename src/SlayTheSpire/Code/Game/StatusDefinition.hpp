@@ -25,7 +25,7 @@ private:
 
 	static std::array<StatusDefinition, (size_t)eStatus::NUM_STATUS> s_statusDefs;
 
-private:
+public:
 	eStatus m_statusType = INVALID_STATUS;
 	Texture const* m_statusTexture = nullptr;
 	int m_strengthPerTurn = 0;

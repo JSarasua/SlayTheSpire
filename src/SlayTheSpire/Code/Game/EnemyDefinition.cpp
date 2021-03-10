@@ -26,6 +26,7 @@ void EnemyDefinition::InitializeEnemyDefinitions()
 
 	std::vector<EnemyMove> cultistMoves;
 	EnemyMove attackMove = EnemyMove( Attack, 6, 0, 0, false, false, &invalidDef );
+	cultistMoves.push_back( attackMove );
 	Texture const* cultistTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Cultist.png" );
 
 	s_enemyDefs[Cultist] = EnemyDefinition( cultistOrderedMoves, cultistMoves, 80, cultistTexture );

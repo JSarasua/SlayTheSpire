@@ -1,4 +1,7 @@
 #pragma once
+#include "Game/StatusDefinition.hpp"
+#include <vector>
+
 
 class Widget;
 class GameState;
@@ -21,11 +24,17 @@ public:
 	void TakeDamage( int damage );
 	void GainBlock( int block ) { m_block += block; }
 	void ResetBlock() { m_block = 0; }
+	int GetDamagePostStrength ( int damage ) const { return m_strength + damage; }
+	void AddStatus( eStatus status );
+	void UpdateStatuses();
 
 protected:
 	int m_health = 80;
 	int m_maxHealth = 80;
 	int m_block = 0;
+	int m_strength = 0;
+	int m_dexterity = 0;
+	std::vector<eStatus> m_currentStatuses;
 
 	Widget* m_entityWidget = nullptr;
 	WidgetSlider* m_healthWidget = nullptr;
