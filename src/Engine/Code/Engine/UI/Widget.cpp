@@ -376,6 +376,22 @@ AABB2 Widget::GetLocalAABB2() const
 	return localAABB;
 }
 
+void Widget::RemoveChildWidget( Widget* childWidget )
+{
+	for( size_t widgetIndex = 0; widgetIndex < m_childWidgets.size(); widgetIndex++ )
+	{
+		Widget*& currentWidget = m_childWidgets[widgetIndex];
+
+		if( currentWidget == childWidget )
+		{
+			Widget* backWidget = m_childWidgets.back();
+			currentWidget = backWidget;
+			m_childWidgets.pop_back();
+			return;
+		}
+	}
+}
+
 void Widget::FireSelectEvents()
 {
 	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );

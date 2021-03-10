@@ -75,6 +75,8 @@ public:
 	bool GetIsHovered() const { return m_isHovered; }
 	bool GetIsSelected() const { return m_isSelected; }
 
+	Widget* GetParentWidget() { return m_parentWidget; }
+	void RemoveChildWidget( Widget* childWidget );
 private:
 	void FireSelectEvents();
 	void FireHoverEvents();
