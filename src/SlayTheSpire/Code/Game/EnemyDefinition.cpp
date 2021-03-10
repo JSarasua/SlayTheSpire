@@ -30,14 +30,22 @@ void EnemyDefinition::InitializeEnemyDefinitions()
 
 	s_enemyDefs[Cultist] = EnemyDefinition( cultistOrderedMoves, cultistMoves, 80, cultistTexture );
 }
-EnemyMove EnemyDefinition::GetRandomMove( RandomNumberGenerator& rng, int moveTurn )
+
+EnemyMove EnemyDefinition::GetNextMove( RandomNumberGenerator& rng, int moveTurn ) const
 {
 	if( moveTurn <= m_orderedMoves.size() && moveTurn > 0 )
 	{
 		int moveIndex = moveTurn - 1;
 		return m_orderedMoves[moveIndex];
 	}
+	else
+	{
+		return GetRandomMove( rng );
+	}
+}
 
+EnemyMove EnemyDefinition::GetRandomMove( RandomNumberGenerator& rng ) const
+{
 	int numberOfMoves = (int)m_moves.size();
 
 	if( numberOfMoves > 0 )

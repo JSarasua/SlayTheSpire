@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <vector>
+#include "Game/MoveTypeDefinition.hpp"
 
 enum eEnemy
 {
@@ -8,18 +9,14 @@ enum eEnemy
 	NUM_ENEMIES
 };
 
-enum eMoveType
-{
-	Attack,
-	Buff,
-	Curse
-};
+
 
 class StatusDefinition;
 
 struct EnemyMove
 {
 public:
+	EnemyMove() {}
 	EnemyMove( eMoveType move, int damage, int block, int strength, bool giveVulnerable, bool giveWeak, StatusDefinition const* statusDef );
 
 	eMoveType m_moveType = Attack;
@@ -45,9 +42,10 @@ public:
 	static void InitializeEnemyDefinitions();
 	static EnemyDefinition const& GetEnemyDefinitionByType( eEnemy enemyType ) { return s_enemyDefs[enemyType]; }
 
-	EnemyMove GetRandomMove( RandomNumberGenerator& rng, int moveTurn );
+	EnemyMove GetNextMove( RandomNumberGenerator& rng, int moveTurn ) const;
+	EnemyMove GetRandomMove( RandomNumberGenerator& rng ) const;
 	int GetMaxHealth() const { return m_maxHealth; }
-	Texture const* GetTexture() { return m_enemyTexture; }
+	Texture const* GetTexture() const { return m_enemyTexture; }
 private:
 	std::vector<EnemyMove> m_orderedMoves;
 	std::vector<EnemyMove> m_moves;

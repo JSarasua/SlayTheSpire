@@ -199,6 +199,7 @@
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Main_Windows.cpp" />
+    <ClCompile Include="MoveTypeDefinition.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBoard.cpp" />
     <ClCompile Include="StatusDefinition.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameState.hpp" />
+    <ClInclude Include="MoveTypeDefinition.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="PlayerBoard.hpp" />
     <ClInclude Include="StatusDefinition.hpp" />

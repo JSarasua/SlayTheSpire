@@ -5,6 +5,7 @@
 #include "Game/GameState.hpp"
 #include "Game/PlayerBoard.hpp"
 #include "Game/Enemy.hpp"
+#include "Game/MoveTypeDefinition.hpp"
 #include "Game/CardDefinition.hpp"
 #include "Game/StatusDefinition.hpp"
 #include "Game/EnemyDefinition.hpp"
@@ -167,6 +168,7 @@ bool Game::PlayCard( EventArgs const& args )
 
 void Game::InitializeDefinitions()
 {
+	MoveTypeDefinition::InitializeMoveTypeDefs();
 	StatusDefinition::InitializeStatusDefinitions();
 	EnemyDefinition::InitializeEnemyDefinitions();
 	CardDefinition::InitializeCardDefinitions();
@@ -224,6 +226,9 @@ void Game::StartupCardGame()
 {
 	m_currentGamestate = new GameState();
 
+	EnemyDefinition const* cultistDef = &EnemyDefinition::GetEnemyDefinitionByType( Cultist );
+	m_currentGamestate->m_enemy = Enemy( cultistDef );
+
 	Enemy& enemy = m_currentGamestate->m_enemy;
 	Player& player = m_currentGamestate->m_player;
 	PlayerBoard& playerBoard = player.m_playerBoard;
@@ -240,6 +245,8 @@ void Game::StartupCardGame()
 	Vec2 enemyPosition = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.45f ) );
 	enemy.SetParentWidget( rootWidget );
 	enemy.SetEntityPositionRelativeToParent( enemyPosition );
+	
+	enemy.UpdateEnemyMove( m_rand );
 
 }
 

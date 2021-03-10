@@ -11,6 +11,8 @@ class Entity
 public:
 	Entity();
 	Entity( Widget* parentWidget, Vec2 const& positionRelativeToParent, GameState* gameState, int maxHealth = 0 );
+	virtual ~Entity();
+
 
 	void SetEntityPositionRelativeToParent( Vec2 const& positionRelativeToParent );
 	void SetParentWidget( Widget* parentWidget );

@@ -65,6 +65,21 @@ Entity::Entity()
 	//m_entityWidget->AddChild( m_statusEffectsWidget )
 }
 
+Entity::~Entity()
+{
+// 	if( m_entityWidget )
+// 	{
+// 		Widget* parentWidget = m_entityWidget->GetParentWidget();
+// 		if( parentWidget )
+// 		{
+// 			parentWidget->RemoveChildWidget( m_entityWidget );
+// 		}
+// 
+// 		delete m_entityWidget;
+// 		m_entityWidget = nullptr;
+// 	}
+}
+
 void Entity::SetEntityPositionRelativeToParent( Vec2 const& positionRelativeToParent )
 {
 	Vec2 position = positionRelativeToParent;

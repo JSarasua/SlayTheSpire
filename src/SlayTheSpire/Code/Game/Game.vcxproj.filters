@@ -58,6 +58,9 @@
     <ClCompile Include="StatusDefinition.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="MoveTypeDefinition.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
@@ -100,6 +103,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="StatusDefinition.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveTypeDefinition.hpp">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
