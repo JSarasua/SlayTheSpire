@@ -1,11 +1,13 @@
 #pragma once
 #include "Game/StatusDefinition.hpp"
+#include "Engine/Math/IntVec2.hpp"
 #include <vector>
 
 
 class Widget;
 class GameState;
 class WidgetSlider;
+class WidgetGrid;
 
 struct Vec2;
 
@@ -26,6 +28,7 @@ public:
 	void ResetBlock() { m_block = 0; }
 	int GetDamagePostStrength ( int damage ) const { return m_strength + damage; }
 	void AddStatus( eStatus status );
+	void AddStength( int strength );
 	void UpdateStatuses();
 
 protected:
@@ -39,7 +42,10 @@ protected:
 	Widget* m_entityWidget = nullptr;
 	WidgetSlider* m_healthWidget = nullptr;
 	Widget* m_blockWidget = nullptr;
-	Widget* m_statusEffectsWidget = nullptr;
+	IntVec2 m_statusEffectsDimensions = IntVec2( 5, 1 );
+	WidgetGrid* m_statusEffectsWidget = nullptr;
+
+	Widget* m_strengthWidget = nullptr;
 
 	GameState* m_gameState = nullptr;
 };

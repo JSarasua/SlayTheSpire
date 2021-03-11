@@ -21,4 +21,5 @@ public:
 
 private:
 	Widget* m_intentWidget = nullptr;
+	Widget* m_intentTextWidget = nullptr;
 };
