@@ -30,6 +30,7 @@ public:
 	void AddStatus( eStatus status );
 	void AddStength( int strength );
 	void UpdateStatuses();
+	int GetHealth() const { return m_health; }
 
 protected:
 	int m_health = 80;

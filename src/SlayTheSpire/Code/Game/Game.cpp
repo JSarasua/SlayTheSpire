@@ -52,6 +52,8 @@ void Game::Startup()
 	MatchUIToGameState();
 
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
+
+	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
 }
 
 void Game::Shutdown()
@@ -165,6 +167,55 @@ bool Game::PlayCard( EventArgs const& args )
 	m_isUIDirty = true;
 
 	return false;
+}
+
+bool Game::FightOver( EventArgs const& args )
+{
+	int playerHealth = m_currentGamestate->m_player.GetHealth();
+	int enemyHealth = m_currentGamestate->m_enemy.GetHealth();
+
+	if( playerHealth <= 0 )
+	{
+		if( m_endFightWidget )
+		{
+			m_endFightWidget->SetText( "You Lose!" );
+			m_endFightWidget->SetIsVisible( true );
+		}
+		else
+		{
+			Transform endFightTransform;
+			endFightTransform.m_scale = Vec3( 5.f, 5.f, 1.f );
+			m_endFightWidget = new Widget( endFightTransform );
+			m_endFightWidget->SetText( "You Lose!" );
+			m_endFightWidget->SetTextSize( 0.3f );
+			m_endFightWidget->SetCanHover( false );
+			m_endFightWidget->SetIsVisible( true );
+			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+		}
+		//You win!
+	}
+	else if( enemyHealth <= 0 )
+	{
+		//You lose!
+		if( m_endFightWidget )
+		{
+			m_endFightWidget->SetText( "You Win!" );
+			m_endFightWidget->SetIsVisible( true );
+		}
+		else
+		{
+			Transform endFightTransform;
+			endFightTransform.m_scale = Vec3( 5.f, 5.f, 1.f );
+			m_endFightWidget = new Widget( endFightTransform );
+			m_endFightWidget->SetText( "You Win!" );
+			m_endFightWidget->SetTextSize( 0.3f );
+			m_endFightWidget->SetCanHover( false );
+			m_endFightWidget->SetIsVisible( true );
+			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+		}
+	}
+
+	return true;
 }
 
 void Game::InitializeDefinitions()

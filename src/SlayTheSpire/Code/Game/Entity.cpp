@@ -153,6 +153,8 @@ void Entity::TakeDamage( int damage )
 
 	m_health -= mitigatedDamage;
 	m_health = MaxInt( m_health, 0 );
+
+	g_theEventSystem->FireEvent( "checkFightOver", NOCONSOLECOMMAND, nullptr );
 }
 
 void Entity::AddStatus( eStatus status )
