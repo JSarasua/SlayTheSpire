@@ -12,7 +12,8 @@ public:
 		int maxHealth = 0 );
 
 	PlayerBoard& GetPlayerBoard() { return m_playerBoard; }
-
+	
+	virtual void Reset() override;
 public:
 	PlayerBoard m_playerBoard;
 };

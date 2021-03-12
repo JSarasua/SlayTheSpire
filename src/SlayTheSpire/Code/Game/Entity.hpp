@@ -31,6 +31,7 @@ public:
 	void AddStength( int strength );
 	void UpdateStatuses();
 	int GetHealth() const { return m_health; }
+	virtual void Reset();
 
 protected:
 	int m_health = 80;

@@ -25,3 +25,9 @@ Player::Player() : Entity(), m_playerBoard()
 	//m_playerBoard.InitializePlayerBoard();
 }
 
+void Player::Reset()
+{
+	Entity::Reset();
+	m_playerBoard.Reset();
+}
+

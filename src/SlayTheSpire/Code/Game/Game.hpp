@@ -26,6 +26,7 @@ public:
 	void Update();
 	void Render();
 
+	bool RestartGame( EventArgs const& args );
 	bool EndTurn( EventArgs const& args );
 	bool PlayCard( EventArgs const& args );
 	bool FightOver( EventArgs const& args );

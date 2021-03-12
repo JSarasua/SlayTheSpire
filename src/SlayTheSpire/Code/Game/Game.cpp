@@ -54,6 +54,7 @@ void Game::Startup()
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
 
 	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
+	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
 }
 
 void Game::Shutdown()
@@ -109,6 +110,17 @@ void Game::Render()
 	DebugRenderWorldToCamera( &m_camera );
 	DebugRenderScreenTo( g_theRenderer->GetBackBuffer() );
 	DebugRenderEndFrame();
+}
+
+bool Game::RestartGame( EventArgs const& args )
+{
+	m_endFightWidget->SetIsVisible( false );
+	m_endFightWidget->SetCanHover( false );
+
+	m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_enemy.Reset();
+
+	return true;
 }
 
 bool Game::EndTurn( EventArgs const& args )
@@ -180,17 +192,25 @@ bool Game::FightOver( EventArgs const& args )
 		{
 			m_endFightWidget->SetText( "You Lose!" );
 			m_endFightWidget->SetIsVisible( true );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanSelect( true );
 		}
 		else
 		{
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+
 			Transform endFightTransform;
-			endFightTransform.m_scale = Vec3( 5.f, 5.f, 1.f );
+			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
-			m_endFightWidget->SetText( "You Lose!" );
-			m_endFightWidget->SetTextSize( 0.3f );
-			m_endFightWidget->SetCanHover( false );
+			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
+			m_endFightWidget->SetText( "You Lose! Click to restart." );
+			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+
+			m_endFightWidget->SetEventToFire( "restartFight" );
 		}
 		//You win!
 	}
@@ -201,17 +221,23 @@ bool Game::FightOver( EventArgs const& args )
 		{
 			m_endFightWidget->SetText( "You Win!" );
 			m_endFightWidget->SetIsVisible( true );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanSelect( true );
 		}
 		else
 		{
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
 			Transform endFightTransform;
-			endFightTransform.m_scale = Vec3( 5.f, 5.f, 1.f );
+			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
-			m_endFightWidget->SetText( "You Win!" );
-			m_endFightWidget->SetTextSize( 0.3f );
-			m_endFightWidget->SetCanHover( false );
+			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
+			m_endFightWidget->SetText( "You Win! Click to restart." );
+			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+			m_endFightWidget->SetEventToFire( "restartFight" );
 		}
 	}
 

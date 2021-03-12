@@ -216,3 +216,13 @@ void Entity::UpdateStatuses()
 	}
 }
 
+void Entity::Reset()
+{
+	m_health = m_maxHealth;
+	m_strength = 0;
+	m_block = 0;
+	m_currentStatuses.clear();
+	m_statusEffectsWidget->ClearChildren();
+	m_strengthWidget = nullptr;
+}
+

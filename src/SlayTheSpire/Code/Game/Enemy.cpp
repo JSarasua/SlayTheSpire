@@ -1,10 +1,11 @@
 #include "Game/Enemy.hpp"
-#include "Engine/Math/MathUtils.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Game.hpp"
+#include "Game/EnemyDefinition.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/UI/Widget.hpp"
 #include "Engine/Renderer/RenderContext.hpp"
 #include "Engine/Renderer/Texture.hpp"
-#include "Game/EnemyDefinition.hpp"
 
 Enemy::Enemy() : Entity()
 {
@@ -75,4 +76,11 @@ void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 		m_intentTextWidget->SetText( "" );
 	}
 
+}
+
+void Enemy::Reset()
+{
+	Entity::Reset();
+	m_actionsDone = 0;
+	UpdateEnemyMove( g_theGame->m_rand );
 }

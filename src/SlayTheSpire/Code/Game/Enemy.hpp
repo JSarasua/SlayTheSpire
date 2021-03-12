@@ -14,6 +14,9 @@ public:
 
 	void UpdateEnemyMove( RandomNumberGenerator& rng );
 	EnemyMove const& GetEnemyMove() const { return m_currentEnemyMove; }
+
+	virtual void Reset() override;
+
 public:
 	EnemyDefinition const* m_enemyDef = nullptr;
 	int m_actionsDone = 0;
