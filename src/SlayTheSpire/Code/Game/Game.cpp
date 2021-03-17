@@ -281,14 +281,17 @@ void Game::MatchUIToGameState()
 	AABB2 handBounds = m_handWidget->GetLocalAABB2();
 	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
 	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
+
 	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
 	{
+		//Create card
 		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
 		Widget* cardWidget = new Widget( *m_baseCardWidget );
 		cardWidget->SetPosition( slotCenter );
 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 	
+		//Add Play Card event to card
 		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
 		eCard cardType = cardDef.GetCardType();
 		releaseArgs.SetValue( "cardType", (int)cardType );
