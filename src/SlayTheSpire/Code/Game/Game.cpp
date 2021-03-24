@@ -20,6 +20,7 @@
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/UI/Widget.hpp"
 #include "Engine/UI/WidgetSlider.hpp"
+#include "Engine/UI/WidgetAnimation.hpp"
 #include "Engine/UI/UIManager.hpp"
 #include "Engine/Math/AABB2.hpp"
 
@@ -114,6 +115,8 @@ void Game::Render()
 
 bool Game::RestartGame( EventArgs const& args )
 {
+	UNUSED( args );
+
 	m_endFightWidget->SetIsVisible( false );
 	m_endFightWidget->SetCanHover( false );
 
@@ -142,7 +145,7 @@ bool Game::EndTurn( EventArgs const& args )
 	return true;
 }
 
-bool Game::PlayCard( EventArgs const& args )
+bool Game::StartPlayCard( EventArgs const& args )
 {
 	Player& player = m_currentGamestate->m_player;
 	PlayerBoard& playerBoard = player.m_playerBoard;
@@ -164,18 +167,30 @@ bool Game::PlayCard( EventArgs const& args )
 		{
 			enemy.TakeDamage( cardAttack );
 			player.GainBlock( cardBlock );
+ 			playerBoard.ConsumeEnergy( cardCost );
 
+			Transform toDiscardPileTransform;
+			toDiscardPileTransform.m_position = Vec3( 6.f, 0.f, 0.f );
+			toDiscardPileTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, -180.f, 0.f );
+			toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
 
-			m_isUIDirty = true;
-			playerBoard.ConsumeEnergy( cardCost );
-			cardWidget->SetIsVisible( false );
-			cardWidget->SetCanHover( false );
-			cardWidget->SetCanSelect( false );
-			cardWidget->SetCanDrag( false );
+			Delegate<EventArgs const&>& endAnimationDelegate = cardWidget->StartAnimation( toDiscardPileTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
+			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayCard );
 			
 			return true;
 		}
 	}
+	else
+	{
+		m_isUIDirty = true;
+	}
+	//m_isUIDirty = true;
+
+	return false;
+}
+
+bool Game::EndPlayCard( EventArgs const& args )
+{
 	m_isUIDirty = true;
 
 	return false;
@@ -183,6 +198,8 @@ bool Game::PlayCard( EventArgs const& args )
 
 bool Game::FightOver( EventArgs const& args )
 {
+	UNUSED( args );
+
 	int playerHealth = m_currentGamestate->m_player.GetHealth();
 	int enemyHealth = m_currentGamestate->m_enemy.GetHealth();
 
@@ -297,7 +314,7 @@ void Game::MatchUIToGameState()
 		releaseArgs.SetValue( "cardType", (int)cardType );
 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
-		releaseDelegate.SubscribeMethod( this, &Game::PlayCard );
+		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
 
 		m_handWidget->AddChild( cardWidget );
 	}
@@ -359,57 +376,7 @@ void Game::StartupUI()
 	m_baseCardWidget = new Widget( baseTransform );
 	m_baseCardWidget->SetCanDrag( true );
 
-
-
-// 	Vec3 scale = Vec3( 2.f, 2.5f, 1.f );
-// 	Transform card1Transform = Transform();
-// 	card1Transform.m_position = Vec2( -3.f, 0.f );
-// 	card1Transform.m_scale = scale;
-// 	card1Transform.m_rotationPitchRollYawDegrees.y = 0.f;
-// 	Widget* card1Widget = new Widget( uiMesh, card1Transform );
-// 	card1Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
-// 	card1Widget->SetEventToFire( testEvent );
-// 	card1Widget->SetCanDrag( true );
-// 	m_handWidget->AddChild( card1Widget );
-// 
-// 	Transform card2Transform = Transform();
-// 	card2Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.425f, 0.245f ) );
-// 	card2Transform.m_scale = scale;
-// 	card2Transform.m_rotationPitchRollYawDegrees.y = 7.5f;
-// 	Widget* card2Widget = new Widget( uiMesh, card2Transform );
-// 	card2Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
-// 	card2Widget->SetEventToFire( testEvent );
-// 	card2Widget->SetCanDrag( true );
-// 	rootWidget->AddChild( card2Widget );
-// 	
-// 	Transform card3Transform = Transform();
-// 	card3Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.25f ) );
-// 	card3Transform.m_scale = scale;
-// 	Widget* card3Widget = new Widget( uiMesh, card3Transform );
-// 	card3Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
-// 	card3Widget->SetEventToFire( testEvent );
-// 	rootWidget->AddChild( card3Widget );
-// 
-// 	Transform card4Transform = Transform();
-// 	card4Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.575f, 0.245f ) );
-// 	card4Transform.m_scale = scale;
-// 	card4Transform.m_rotationPitchRollYawDegrees.y = -7.5f;
-// 	Widget* card4Widget = new Widget( uiMesh, card4Transform );
-// 	card4Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
-// 	card4Widget->SetEventToFire( testEvent );
-// 	rootWidget->AddChild( card4Widget );
-// 
-// 	Transform card5Transform = Transform();
-// 	card5Transform.m_position = screenBounds.GetPointAtUV( Vec2( 0.65f, 0.2f ) );
-// 	card5Transform.m_scale = scale;
-// 	card5Transform.m_rotationPitchRollYawDegrees.y = -15.f;
-// 	Widget* card5Widget = new Widget( uiMesh, card5Transform );
-// 	card5Widget->SetTexture( strikeTexture, m_highlightTexture, m_selectTexture );
-// 	card5Widget->SetEventToFire( testEvent );
-// 	rootWidget->AddChild( card5Widget );
-
-
-
+	//Deck
 	Vec3 deckScale = Vec3( 1.f, 1.5f, 1.f );
 	Transform deckTransform = Transform();
 	deckTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.05f, 0.1f ) );
@@ -422,17 +389,20 @@ void Game::StartupUI()
 	rootWidget->AddChild( deckWidget );
 	m_deckWidget = deckWidget;
 
+	//Energy
 	m_energyWidget = new Widget( *deckWidget );
 	m_energyWidget->SetTexture( energyStoneTexture, m_cyanTexture, m_redTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
 	m_energyWidget->SetCanHover( false );
 	rootWidget->AddChild( m_energyWidget );
 
+	//Discard
 	Widget* discardWidget = new Widget( *deckWidget );
 	discardWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.95f, 0.1f ) ) );
 	rootWidget->AddChild( discardWidget );
 	m_discardPileWidget = discardWidget;
 
+	//End Turn
 	Transform endTurnTransform = Transform();
 	endTurnTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.95f, 0.25f ) );
 	endTurnTransform.m_scale = Vec3( 1.5f, 0.75f, 1.f );
@@ -450,7 +420,6 @@ void Game::StartupUI()
 	handTransform.m_position = screenBounds.GetPointAtUV( Vec2( 0.5f, 0.1f ) );
 	handTransform.m_scale = handScale;
 	m_handWidget = new Widget( handTransform );
-	//m_handWidget->SetTexture( handTexture, nullptr, nullptr );
 	m_handWidget->SetIsVisible( false );
 	rootWidget->AddChild( m_handWidget );
 }

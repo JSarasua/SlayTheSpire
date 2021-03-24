@@ -6,6 +6,7 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/UI/UIManager.hpp"
+#include "Engine/UI/WidgetAnimation.hpp"
 
 Widget::Widget( Transform const& transform, Widget* parentWidget) :
 	m_widgetTransform( transform ),
@@ -76,6 +77,7 @@ void Widget::ClearChildren()
 	m_childWidgets.clear();
 }
 
+//Used by a child Widget on its parent trying to get its parent's relative matrix
 Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
 {
 	Mat44 parentMatrix;
@@ -84,7 +86,7 @@ Mat44 Widget::GetParentRelativeModelMatrixNoScale() const
 	{
 		parentMatrix = m_parentWidget->GetParentRelativeModelMatrixNoScale();
 	}
-	//Pushing on local matrix to the end of maxtrix chain
+	//Pushing on local matrix to the end of matrix chain
 	parentMatrix.TransformBy( myLocalMatrix );
 
 	return parentMatrix;
@@ -141,7 +143,6 @@ void Widget::Render()
 		RenderContext* context = m_mesh->m_renderContext;
 		if( nullptr != context )
 		{
-			//Mat44 modelMatrix = GetRelativeModelMatrix();
 			Mat44 modelMatrix = GetRelativeModelMatrixScaleOnlySelf();
 
 			context->SetModelMatrix( modelMatrix );
@@ -182,6 +183,27 @@ void Widget::Render()
 			childWidget->Render();
 		}
 	}
+}
+
+bool Widget::EndAnimation( EventArgs const& args )
+{
+	UNUSED( args );
+	m_isAnimationDone = true;
+	return false;
+}
+
+Delegate<EventArgs const&>& Widget::StartAnimation( Transform const& finalTransform, float animationTime, eSmoothingFunction smoothingFunction )
+{
+	if( m_currentWidgetAnimation )
+	{
+		delete m_currentWidgetAnimation;
+		m_currentWidgetAnimation = nullptr;
+	}
+
+	m_currentWidgetAnimation = new WidgetAnimation( this, finalTransform, animationTime, smoothingFunction );
+	m_currentWidgetAnimation->m_endAnimationDelegate.SubscribeMethod( this, &Widget::EndAnimation );
+
+	return m_currentWidgetAnimation->m_endAnimationDelegate;
 }
 
 Mat44 Widget::GetRelativeModelMatrix() const
@@ -240,6 +262,14 @@ bool Widget::IsPointInside( Vec2 const& point ) const
 	//Unsure if this works. Need to test. Matrices may be going backwards
 	AABB2 widgetBounds = AABB2( Vec2( -0.5f, -0.5f ), Vec2( 0.5f, 0.5f ) );
 	return widgetBounds.IsPointInside( localPosition );
+}
+
+void Widget::Update( float deltaSeconds, Vec2 const& mousePos )
+{
+	UpdateHovered( mousePos );
+	CheckInput();
+	UpdateDrag();
+	UpdateAnimations( deltaSeconds );
 }
 
 bool Widget::UpdateHovered( Vec2 const& point )
@@ -332,6 +362,32 @@ void Widget::CheckInput()
 		if( nullptr != childWidget )
 		{
 			childWidget->CheckInput();
+		}
+	}
+}
+
+void Widget::UpdateAnimations( float deltaSeconds )
+{
+	if( m_currentWidgetAnimation )
+	{
+		m_currentWidgetAnimation->Update( deltaSeconds );
+	}
+
+	if( m_isAnimationDone )
+	{
+		m_isAnimationDone = false;
+		if( m_currentWidgetAnimation )
+		{
+			delete m_currentWidgetAnimation;
+			m_currentWidgetAnimation = nullptr;
+		}
+	}
+
+	for( Widget* childWidget : m_childWidgets )
+	{
+		if( nullptr != childWidget )
+		{
+			childWidget->UpdateAnimations( deltaSeconds );
 		}
 	}
 }
