@@ -264,6 +264,11 @@ bool Widget::IsPointInside( Vec2 const& point ) const
 	return widgetBounds.IsPointInside( localPosition );
 }
 
+std::vector<Widget*> Widget::GetChildWidgets()
+{
+	return m_childWidgets;
+}
+
 void Widget::Update( float deltaSeconds, Vec2 const& mousePos )
 {
 	UpdateHovered( mousePos );

@@ -126,7 +126,33 @@ bool Game::RestartGame( EventArgs const& args )
 	return true;
 }
 
-bool Game::EndTurn( EventArgs const& args )
+bool Game::StartEndTurn( EventArgs const& args )
+{
+ 	//PlayerBoard const& playerBoard = m_currentGamestate->m_player.m_playerBoard;
+ 	std::vector<Widget*> childWidgets = m_handWidget->GetChildWidgets();
+
+	float animationSpeed = 1.f;
+	for( Widget* childWidget : childWidgets )
+	{
+		Transform toDiscardPileTransform;
+		toDiscardPileTransform.m_position = Vec3( 7.f, 0.f, 0.f );
+		toDiscardPileTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, -180.f, 0.f );
+		toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
+
+		Delegate<EventArgs const&>& endAnimationDelegate = childWidget->StartAnimation( toDiscardPileTransform, 0.5f * animationSpeed, eSmoothingFunction::SMOOTHSTART3 );
+		
+		if( childWidget == childWidgets.back() )
+		{
+			endAnimationDelegate.SubscribeMethod( this, &Game::EndEndTurn );
+		}
+
+		animationSpeed *= 1.1f;
+	}
+
+	return true;
+}
+
+bool Game::EndEndTurn( EventArgs const& args )
 {
 	UNUSED( args );
 	Player& player = m_currentGamestate->m_player;
@@ -140,9 +166,13 @@ bool Game::EndTurn( EventArgs const& args )
 
 	player.ResetBlock();
 
-
-	MatchUIToGameState();
+	m_isUIDirty = true;
 	return true;
+}
+
+bool Game::EndTurn( EventArgs const& args )
+{
+	return StartEndTurn( args );
 }
 
 bool Game::StartPlayCard( EventArgs const& args )

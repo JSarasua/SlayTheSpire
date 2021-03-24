@@ -69,6 +69,8 @@ public:
 	Mat44 GetInverseModelMatrixScaleOnlySelf() const;
 	bool IsPointInside( Vec2 const& point ) const;
 
+	std::vector<Widget*> GetChildWidgets();
+
 	void Update( float deltaSeconds, Vec2 const& mousePos );
 	bool UpdateHovered( Vec2 const& point );
 	void UpdateDrag();

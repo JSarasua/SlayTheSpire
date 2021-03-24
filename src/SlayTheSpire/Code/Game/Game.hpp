@@ -27,6 +27,12 @@ public:
 	void Render();
 
 	bool RestartGame( EventArgs const& args );
+	bool StartEndTurn( EventArgs const& args );
+	bool EndEndTurn( EventArgs const& args );
+	bool StartEnemyTurn( EventArgs const& args );
+	bool EndEnemyTurn( EventArgs const& args );
+	bool StartStartPlayerTurn( EventArgs const& args );
+	bool EndStartPlayerTurn( EventArgs const& args );
 	bool EndTurn( EventArgs const& args );
 	bool StartPlayCard( EventArgs const& args );
 	bool EndPlayCard( EventArgs const& args );
