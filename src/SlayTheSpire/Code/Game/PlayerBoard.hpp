@@ -36,10 +36,12 @@ public:
 	int GetMaxEnergy() const { return m_playerMaxEnergy; }
 	std::vector<eCard> GetHandAsVector() const;
 
+	void Reset();
 public:
 	std::vector<eCard> m_deck; 
 	CardPile m_hand;
 	CardPile m_discardPile;
+	CardPile m_permanentDeck;
 	
 	int m_playerEnergy = 0;
 	int m_playerMaxEnergy = 3;

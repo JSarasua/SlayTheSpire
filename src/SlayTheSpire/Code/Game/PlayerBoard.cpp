@@ -9,18 +9,9 @@ void PlayerBoard::InitializePlayerBoard()
 	m_deck.clear();
 	m_hand.ClearPile();
 	m_discardPile.ClearPile();
-
-	m_deck.reserve( 10 );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Strike );
-	m_deck.push_back( eCard::Defend );
-	m_deck.push_back( eCard::Defend );
-	m_deck.push_back( eCard::Defend );
+	m_permanentDeck.AddCard( Strike, 7 );
+	m_permanentDeck.AddCard( Defend, 3 );
+	m_deck = m_permanentDeck.ToVector();
 
 	ShuffleDeck();
 
@@ -153,5 +144,21 @@ int PlayerBoard::GetDiscardPileSize() const
 std::vector<eCard> PlayerBoard::GetHandAsVector() const
 {
 	return m_hand.ToVector();
+}
+
+void PlayerBoard::Reset()
+{
+	m_deck.clear();
+	m_hand.ClearPile();
+	m_discardPile.ClearPile();
+
+	m_deck = m_permanentDeck.ToVector();
+
+	ShuffleDeck();
+	DrawHand();
+
+	m_playerEnergy = m_playerMaxEnergy;
+	m_playerHealth = m_playerMaxHealth;
+	m_playerBlock = 0;
 }
 

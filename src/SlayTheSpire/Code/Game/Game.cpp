@@ -5,7 +5,10 @@
 #include "Game/GameState.hpp"
 #include "Game/PlayerBoard.hpp"
 #include "Game/Enemy.hpp"
+#include "Game/MoveTypeDefinition.hpp"
 #include "Game/CardDefinition.hpp"
+#include "Game/StatusDefinition.hpp"
+#include "Game/EnemyDefinition.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
 #include "Engine/Time/Clock.hpp"
@@ -43,11 +46,15 @@ void Game::Startup()
 	g_theUIManager = new UIManager( Vec2( 16.f, 9.f ), g_theRenderer );
 	g_theUIManager->Startup();
 
+	InitializeDefinitions();
 	StartupCardGame();
 	StartupUI();
 	MatchUIToGameState();
 
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
+
+	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
+	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
 }
 
 void Game::Shutdown()
@@ -105,19 +112,31 @@ void Game::Render()
 	DebugRenderEndFrame();
 }
 
+bool Game::RestartGame( EventArgs const& args )
+{
+	m_endFightWidget->SetIsVisible( false );
+	m_endFightWidget->SetCanHover( false );
+
+	m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_enemy.Reset();
+
+	return true;
+}
+
 bool Game::EndTurn( EventArgs const& args )
 {
 	UNUSED( args );
 	Player& player = m_currentGamestate->m_player;
-	Enemy& enemy = m_currentGamestate->m_enemy;
-
-	player.ResetBlock();
-	enemy.ResetBlock();
 
 	PlayerBoard& playerBoard = player.m_playerBoard;
 	playerBoard.DiscardHand();
 	playerBoard.DrawHand();
 	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+
+	DoEnemyTurn();
+
+	player.ResetBlock();
+
 
 	MatchUIToGameState();
 	return true;
@@ -162,6 +181,77 @@ bool Game::PlayCard( EventArgs const& args )
 	return false;
 }
 
+bool Game::FightOver( EventArgs const& args )
+{
+	int playerHealth = m_currentGamestate->m_player.GetHealth();
+	int enemyHealth = m_currentGamestate->m_enemy.GetHealth();
+
+	if( playerHealth <= 0 )
+	{
+		if( m_endFightWidget )
+		{
+			m_endFightWidget->SetText( "You Lose!" );
+			m_endFightWidget->SetIsVisible( true );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanSelect( true );
+		}
+		else
+		{
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+
+			Transform endFightTransform;
+			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
+			m_endFightWidget = new Widget( endFightTransform );
+			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
+			m_endFightWidget->SetText( "You Lose! Click to restart." );
+			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanDrag( false );
+			m_endFightWidget->SetIsVisible( true );
+			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+
+			m_endFightWidget->SetEventToFire( "restartFight" );
+		}
+		//You win!
+	}
+	else if( enemyHealth <= 0 )
+	{
+		//You lose!
+		if( m_endFightWidget )
+		{
+			m_endFightWidget->SetText( "You Win!" );
+			m_endFightWidget->SetIsVisible( true );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanSelect( true );
+		}
+		else
+		{
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+			Transform endFightTransform;
+			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
+			m_endFightWidget = new Widget( endFightTransform );
+			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
+			m_endFightWidget->SetText( "You Win! Click to restart." );
+			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetCanHover( true );
+			m_endFightWidget->SetCanDrag( false );
+			m_endFightWidget->SetIsVisible( true );
+			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+			m_endFightWidget->SetEventToFire( "restartFight" );
+		}
+	}
+
+	return true;
+}
+
+void Game::InitializeDefinitions()
+{
+	MoveTypeDefinition::InitializeMoveTypeDefs();
+	StatusDefinition::InitializeStatusDefinitions();
+	EnemyDefinition::InitializeEnemyDefinitions();
+	CardDefinition::InitializeCardDefinitions();
+}
+
 void Game::UpdateUI()
 {
 	if( m_isUIDirty )
@@ -191,14 +281,17 @@ void Game::MatchUIToGameState()
 	AABB2 handBounds = m_handWidget->GetLocalAABB2();
 	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
 	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
+
 	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
 	{
+		//Create card
 		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
 		Widget* cardWidget = new Widget( *m_baseCardWidget );
 		cardWidget->SetPosition( slotCenter );
 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 	
+		//Add Play Card event to card
 		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
 		eCard cardType = cardDef.GetCardType();
 		releaseArgs.SetValue( "cardType", (int)cardType );
@@ -212,8 +305,10 @@ void Game::MatchUIToGameState()
 
 void Game::StartupCardGame()
 {
-	CardDefinition::InitializeCardDefinitions();
 	m_currentGamestate = new GameState();
+
+	EnemyDefinition const* cultistDef = &EnemyDefinition::GetEnemyDefinitionByType( Cultist );
+	m_currentGamestate->m_enemy = Enemy( cultistDef );
 
 	Enemy& enemy = m_currentGamestate->m_enemy;
 	Player& player = m_currentGamestate->m_player;
@@ -231,6 +326,8 @@ void Game::StartupCardGame()
 	Vec2 enemyPosition = screenBounds.GetPointAtUV( Vec2( 0.7f, 0.45f ) );
 	enemy.SetParentWidget( rootWidget );
 	enemy.SetEntityPositionRelativeToParent( enemyPosition );
+	
+	enemy.UpdateEnemyMove( m_rand );
 
 }
 
@@ -633,4 +730,34 @@ void Game::CheckButtonPresses(float deltaSeconds)
 	}
 
 	//m_camera.TranslateRelativeToViewOnlyYaw( translator );
+}
+
+void Game::DoEnemyTurn()
+{
+	Player& player = m_currentGamestate->m_player;
+	Enemy& enemy = m_currentGamestate->m_enemy;
+
+	enemy.ResetBlock();
+	
+	EnemyMove const& move = enemy.GetEnemyMove();
+	eStatus status = move.m_statusDef->m_statusType;
+
+	enemy.UpdateStatuses();
+
+	if( status == Ritual )
+	{
+		enemy.AddStatus( status );
+	}
+	else if( status != INVALID_STATUS )
+	{
+		player.AddStatus( status );
+	}
+
+	int damage = move.m_damage;
+	damage = enemy.GetDamagePostStrength( damage );
+	int block = move.m_block;
+	player.TakeDamage( damage );
+	enemy.GainBlock( block );
+
+	enemy.UpdateEnemyMove( m_rand );
 }

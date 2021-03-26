@@ -43,9 +43,6 @@
     <ClCompile Include="CardPile.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyDefintion.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -53,6 +50,15 @@
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyDefinition.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="StatusDefinition.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveTypeDefinition.cpp">
       <Filter>General</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,6 +100,12 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="Player.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusDefinition.hpp">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveTypeDefinition.hpp">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>

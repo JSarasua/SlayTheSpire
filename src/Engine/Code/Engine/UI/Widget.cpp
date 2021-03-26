@@ -158,8 +158,12 @@ void Widget::Render()
 				context->DrawMesh( m_mesh );
 			}
 
-			context->BindTexture( m_texture );
-			context->DrawMesh( m_mesh );
+			if( m_texture )
+			{
+				context->BindTexture( m_texture );
+				context->DrawMesh( m_mesh );
+			}
+
 
 			if( m_text.size() > 0 )
 			{
@@ -374,6 +378,22 @@ AABB2 Widget::GetLocalAABB2() const
 
 	AABB2 localAABB = AABB2( localBottomLeft, localTopRight );
 	return localAABB;
+}
+
+void Widget::RemoveChildWidget( Widget* childWidget )
+{
+	for( size_t widgetIndex = 0; widgetIndex < m_childWidgets.size(); widgetIndex++ )
+	{
+		Widget*& currentWidget = m_childWidgets[widgetIndex];
+
+		if( currentWidget == childWidget )
+		{
+			Widget* backWidget = m_childWidgets.back();
+			currentWidget = backWidget;
+			m_childWidgets.pop_back();
+			return;
+		}
+	}
 }
 
 void Widget::FireSelectEvents()

@@ -26,10 +26,13 @@ public:
 	void Update();
 	void Render();
 
+	bool RestartGame( EventArgs const& args );
 	bool EndTurn( EventArgs const& args );
 	bool PlayCard( EventArgs const& args );
+	bool FightOver( EventArgs const& args );
 
 private:
+	void InitializeDefinitions();
 	void UpdateUI();
 	void MatchUIToGameState();
 
@@ -41,6 +44,8 @@ private:
 	void RenderGame();
 	void RenderUI();
 	void CheckButtonPresses(float deltaSeconds);
+
+	void DoEnemyTurn();
 
 
 private:
@@ -61,6 +66,8 @@ private:
 	Widget* m_handWidget = nullptr;
 	Widget* m_energyWidget = nullptr;
 	Widget* m_endTurnWidget = nullptr;
+
+	Widget* m_endFightWidget = nullptr;
 
 	bool m_isUIDirty = false;
 
