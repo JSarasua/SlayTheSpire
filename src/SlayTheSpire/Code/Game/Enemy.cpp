@@ -6,6 +6,7 @@
 #include "Engine/UI/Widget.hpp"
 #include "Engine/Renderer/RenderContext.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Core/Delegate.hpp"
 
 Enemy::Enemy() : Entity()
 {
@@ -57,6 +58,9 @@ Enemy::Enemy( EnemyDefinition const* enemyDef ) :
 	m_intentWidget->SetTexture( moveTexture, nullptr, nullptr );
 }
 
+Enemy::~Enemy()
+{}
+
 void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 {
 	m_actionsDone++;
@@ -83,4 +87,28 @@ void Enemy::Reset()
 	Entity::Reset();
 	m_actionsDone = 0;
 	UpdateEnemyMove( g_theGame->m_rand );
+}
+
+bool Enemy::BeginAttack( EventArgs const& args )
+{
+
+	m_startTransform = m_entityWidget->GetTransform();
+	Transform endTransform = m_startTransform;
+	endTransform.m_position.x -= 1.f;
+
+	Delegate<EventArgs const&>& endAnimationDelegate = m_entityWidget->StartAnimation( endTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
+	endAnimationDelegate.SubscribeMethod( this, &Enemy::BeginStopAttack );
+
+	return true;
+}
+
+bool Enemy::BeginStopAttack( EventArgs const& args )
+{
+	g_theGame->EnemyDealDamage( EventArgs() );
+
+	Delegate<EventArgs const&>& endAnimationDelegate = m_entityWidget->StartAnimation( m_startTransform, 0.2f, eSmoothingFunction::SMOOTHSTOP3 );
+	//endAnimationDelegate.UnsubscribeObject( this );
+	endAnimationDelegate.SubscribeMethod( g_theGame, &Game::EndEnemyTurn );
+
+	return true;
 }

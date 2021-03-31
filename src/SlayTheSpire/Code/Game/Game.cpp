@@ -23,6 +23,7 @@
 #include "Engine/UI/WidgetAnimation.hpp"
 #include "Engine/UI/UIManager.hpp"
 #include "Engine/Math/AABB2.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 
 Game::Game()
@@ -123,10 +124,12 @@ bool Game::RestartGame( EventArgs const& args )
 	m_currentGamestate->m_player.Reset();
 	m_currentGamestate->m_enemy.Reset();
 
+	m_isUIDirty = true;
+
 	return true;
 }
 
-bool Game::StartEndTurn( EventArgs const& args )
+bool Game::StartPlayerEndTurn( EventArgs const& args )
 {
  	//PlayerBoard const& playerBoard = m_currentGamestate->m_player.m_playerBoard;
  	std::vector<Widget*> childWidgets = m_handWidget->GetChildWidgets();
@@ -134,6 +137,8 @@ bool Game::StartEndTurn( EventArgs const& args )
 	float animationSpeed = 1.f;
 	for( Widget* childWidget : childWidgets )
 	{
+		childWidget->SetCanHover( false );
+
 		Transform toDiscardPileTransform;
 		toDiscardPileTransform.m_position = Vec3( 7.f, 0.f, 0.f );
 		toDiscardPileTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, -180.f, 0.f );
@@ -143,7 +148,7 @@ bool Game::StartEndTurn( EventArgs const& args )
 		
 		if( childWidget == childWidgets.back() )
 		{
-			endAnimationDelegate.SubscribeMethod( this, &Game::EndEndTurn );
+			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayerEndTurn );
 		}
 
 		animationSpeed *= 1.1f;
@@ -152,27 +157,137 @@ bool Game::StartEndTurn( EventArgs const& args )
 	return true;
 }
 
-bool Game::EndEndTurn( EventArgs const& args )
+bool Game::EndPlayerEndTurn( EventArgs const& args )
 {
 	UNUSED( args );
 	Player& player = m_currentGamestate->m_player;
 
 	PlayerBoard& playerBoard = player.m_playerBoard;
 	playerBoard.DiscardHand();
-	playerBoard.DrawHand();
-	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+// 	playerBoard.DrawHand();
+// 	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+// 	DoEnemyTurn();
+// 	player.ResetBlock();
+	m_isUIDirty = true;
 
+	StartEnemyTurn( EventArgs() );
+	return true;
+}
+
+bool Game::StartEnemyTurn( EventArgs const& args )
+{
+	m_currentGamestate->m_enemy.BeginAttack( EventArgs() );
+
+	return true;
+}
+
+bool Game::EnemyDealDamage( EventArgs const& args )
+{
+	Player& player = m_currentGamestate->m_player;
+	Enemy& enemy = m_currentGamestate->m_enemy;
+
+	enemy.ResetBlock();
+
+	EnemyMove const& move = enemy.GetEnemyMove();
+	eStatus status = move.m_statusDef->m_statusType;
+
+	enemy.UpdateStatuses();
+
+	if( status == Ritual )
+	{
+		enemy.AddStatus( status );
+	}
+	else if( status != INVALID_STATUS )
+	{
+		player.AddStatus( status );
+	}
+
+	int damage = move.m_damage;
+	damage = enemy.GetDamagePostStrength( damage );
+	int block = move.m_block;
+	player.TakeDamage( damage );
+	enemy.GainBlock( block );
+
+	return true;
+}
+
+bool Game::EndEnemyTurn( EventArgs const& args )
+{
 	DoEnemyTurn();
 
-	player.ResetBlock();
+	return true;
 
-	m_isUIDirty = true;
+}
+
+bool Game::StartStartPlayerTurn( EventArgs const& args )
+{
+	Player& player = m_currentGamestate->m_player;
+	PlayerBoard& playerBoard = player.m_playerBoard;
+
+	player.ResetBlock();
+	playerBoard.DrawHand();
+
+	//PlayerBoard const& playerBoard = m_currentGamestate->m_player.m_playerBoard;
+	m_handWidget->ClearChildren();
+
+	AABB2 handBounds = m_handWidget->GetLocalAABB2();
+	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
+	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
+
+	std::vector<Transform> handTransforms = GetGoalHandTransforms( (int)playerHand.size() );
+
+	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
+	{
+		//Create card
+		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+		Widget* cardWidget = new Widget( *m_baseCardWidget );
+		Transform startTransform = cardWidget->GetTransform();
+		startTransform.m_position = Vec2( -6.f, 0.f );
+		startTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, 90.f, 0.f );
+		//cardWidget->SetPosition( Vec2( -6.f, 0.f ) );
+		cardWidget->SetTransform( startTransform );
+		//cardWidget->SetPosition( slotCenter );
+		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+		//Add Play Card event to card
+		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
+		eCard cardType = cardDef.GetCardType();
+		releaseArgs.SetValue( "cardType", (int)cardType );
+		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
+		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+		m_handWidget->AddChild( cardWidget );
+
+		Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+		//finalPositionTransform.m_position = slotCenter;
+		finalPositionTransform = handTransforms[handIndex];
+		cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		//cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
+	}
+
+	EndStartPlayerTurn( EventArgs() );
+
+	return true;
+}
+
+bool Game::EndStartPlayerTurn( EventArgs const& args )
+{
+	Player& player = m_currentGamestate->m_player;
+	PlayerBoard& playerBoard = player.m_playerBoard;
+
+
+	playerBoard.m_playerEnergy = playerBoard.m_playerMaxEnergy;
+
+	//MatchUIToGameState();
+
 	return true;
 }
 
 bool Game::EndTurn( EventArgs const& args )
 {
-	return StartEndTurn( args );
+	return StartPlayerEndTurn( args );
 }
 
 bool Game::StartPlayCard( EventArgs const& args )
@@ -329,12 +444,15 @@ void Game::MatchUIToGameState()
 	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
 	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
 
+	std::vector<Transform> handSlotTransforms = GetGoalHandTransforms( (int)playerHand.size() );
+
 	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
 	{
 		//Create card
 		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
 		Widget* cardWidget = new Widget( *m_baseCardWidget );
 		cardWidget->SetPosition( slotCenter );
+		cardWidget->SetTransform( handSlotTransforms[handIndex] );
 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 	
@@ -731,32 +849,57 @@ void Game::CheckButtonPresses(float deltaSeconds)
 	//m_camera.TranslateRelativeToViewOnlyYaw( translator );
 }
 
+std::vector<Transform> Game::GetGoalHandTransforms( int handCount )
+{
+	std::vector<Transform> handTransforms;
+
+	AABB2 handBounds = m_handWidget->GetLocalAABB2();
+
+	Vec2 handCenter = handBounds.GetCenter();
+	Vec2 discCenter = handCenter;
+
+
+	float discCordLength = handBounds.GetDimensions().x;
+	float discChordToTopOfDisc = 0.5f * handBounds.GetDimensions().y;
+	float discRadius = ( discCordLength*discCordLength/(4.f * discChordToTopOfDisc) + discChordToTopOfDisc ) / 2.f;
+	
+	discCenter.y -= discRadius;
+
+	float cardArcLength = 1.75f;
+	float cardArcDegrees = 180.f * cardArcLength / ( 3.1415f * discRadius );
+
+	float startingDegrees = (float)handCount / 2.f - 0.5f;
+	startingDegrees *= -1.f * cardArcDegrees;
+
+	Vec2 startVec = Vec2( 0.f, discRadius );
+	startVec.RotateDegrees( startingDegrees );
+
+	float currentAngle = startingDegrees;
+	Vec2 currentVec = startVec;
+	int cardIndex = 0;
+	while( cardIndex < handCount )
+	{
+		Vec2 cardPosition = currentVec + discCenter;
+		float cardOrientation = currentAngle;
+
+		Transform cardTransform = m_baseCardWidget->GetTransform();
+		cardTransform.m_position = cardPosition;
+		cardTransform.m_rotationPitchRollYawDegrees.y = cardOrientation;
+
+		handTransforms.push_back( cardTransform );
+
+		currentVec.RotateDegrees( cardArcDegrees );
+		currentAngle += cardArcDegrees;
+
+		cardIndex++;
+	}
+
+	return handTransforms;
+}
+
 void Game::DoEnemyTurn()
 {
-	Player& player = m_currentGamestate->m_player;
 	Enemy& enemy = m_currentGamestate->m_enemy;
-
-	enemy.ResetBlock();
-	
-	EnemyMove const& move = enemy.GetEnemyMove();
-	eStatus status = move.m_statusDef->m_statusType;
-
-	enemy.UpdateStatuses();
-
-	if( status == Ritual )
-	{
-		enemy.AddStatus( status );
-	}
-	else if( status != INVALID_STATUS )
-	{
-		player.AddStatus( status );
-	}
-
-	int damage = move.m_damage;
-	damage = enemy.GetDamagePostStrength( damage );
-	int block = move.m_block;
-	player.TakeDamage( damage );
-	enemy.GainBlock( block );
-
 	enemy.UpdateEnemyMove( m_rand );
+	StartStartPlayerTurn( EventArgs() );
 }

@@ -27,9 +27,10 @@ public:
 	void Render();
 
 	bool RestartGame( EventArgs const& args );
-	bool StartEndTurn( EventArgs const& args );
-	bool EndEndTurn( EventArgs const& args );
+	bool StartPlayerEndTurn( EventArgs const& args );
+	bool EndPlayerEndTurn( EventArgs const& args );
 	bool StartEnemyTurn( EventArgs const& args );
+	bool EnemyDealDamage( EventArgs const& args );
 	bool EndEnemyTurn( EventArgs const& args );
 	bool StartStartPlayerTurn( EventArgs const& args );
 	bool EndStartPlayerTurn( EventArgs const& args );
@@ -51,6 +52,7 @@ private:
 	void RenderGame();
 	void RenderUI();
 	void CheckButtonPresses(float deltaSeconds);
+	std::vector<Transform> GetGoalHandTransforms( int handCount );
 
 	void DoEnemyTurn();
 
