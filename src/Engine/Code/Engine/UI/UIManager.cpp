@@ -79,13 +79,9 @@ void UIManager::Render()
 
 void UIManager::Update( float deltaSeconds )
 {
-	UNUSED( deltaSeconds );
-
 	Vec2 mousePos = g_theInput->GetMouseNormalizedPos();
 	mousePos = m_screenBounds.GetPointAtUV( mousePos );
 
-	m_rootWidget->UpdateHovered( mousePos );
-	m_rootWidget->CheckInput();
-	m_rootWidget->UpdateDrag();
+	m_rootWidget->Update( deltaSeconds, mousePos );
 }
 

@@ -15,7 +15,9 @@ struct Vec2;
 class RenderContext;
 class GPUMesh;
 class Texture;
+class WidgetAnimation;
 
+enum class eSmoothingFunction;
 
 enum eStates
 {
@@ -28,6 +30,7 @@ enum eStates
 
 class Widget
 {
+	friend class WidgetAnimation;
 public:
 	Widget();
 	Widget( AABB2 screenBounds ); //Root Parent Widget
@@ -35,6 +38,11 @@ public:
 	~Widget();
 
 	virtual void Render();
+
+	bool EndAnimation( EventArgs const& args );
+	Delegate<EventArgs const&>& StartAnimation( Transform const& finalTransform, float animationTime, eSmoothingFunction smoothingFunction );
+	Delegate<EventArgs const&>& StartAnimation( WidgetAnimation const& widgetAnimation );
+
 
 	//Mutators
 	void TransformWidget( Transform const& transform );
@@ -46,6 +54,7 @@ public:
 	void SetCanSelect( bool canSelect ) { m_canSelect = canSelect; }
 	void SetIsVisible( bool isVisible ) { m_isVisible = isVisible; }
 	void RemoveHoverAndSelected();
+	void SetTransform( Transform const& transform ) { m_widgetTransform = transform; }
 	void SetPosition( Vec2 const& position ) { m_widgetTransform.m_position = position; }
 	void SetText( std::string const& text ) { m_text = text; }
 	void SetTextSize( float textSize ) { m_textSize = textSize; }
@@ -62,9 +71,14 @@ public:
 	Mat44 GetInverseModelMatrix() const;
 	Mat44 GetInverseModelMatrixScaleOnlySelf() const;
 	bool IsPointInside( Vec2 const& point ) const;
+
+	std::vector<Widget*> GetChildWidgets();
+
+	void Update( float deltaSeconds, Vec2 const& mousePos );
 	bool UpdateHovered( Vec2 const& point );
 	void UpdateDrag();
 	void CheckInput();
+	void UpdateAnimations( float deltaSeconds );
 
 	Vec2 GetWorldTopRight() const;
 	Vec2 GetWorldBottomLeft() const;
@@ -121,4 +135,7 @@ public:
 	Delegate<EventArgs const&> m_selectDelegate;
 	Delegate<EventArgs const&> m_releaseDelegate;
 	Delegate<EventArgs const&> m_hoverDelegate;
+
+	bool m_isAnimationDone = false;
+	WidgetAnimation* m_currentWidgetAnimation = nullptr;
 };
