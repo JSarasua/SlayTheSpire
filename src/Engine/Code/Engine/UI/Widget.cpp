@@ -194,6 +194,7 @@ bool Widget::EndAnimation( EventArgs const& args )
 
 Delegate<EventArgs const&>& Widget::StartAnimation( Transform const& finalTransform, float animationTime, eSmoothingFunction smoothingFunction )
 {
+	m_isAnimationDone = false;
 	if( m_currentWidgetAnimation )
 	{
 		delete m_currentWidgetAnimation;
@@ -201,6 +202,20 @@ Delegate<EventArgs const&>& Widget::StartAnimation( Transform const& finalTransf
 	}
 
 	m_currentWidgetAnimation = new WidgetAnimation( this, finalTransform, animationTime, smoothingFunction );
+	m_currentWidgetAnimation->m_endAnimationDelegate.SubscribeMethod( this, &Widget::EndAnimation );
+
+	return m_currentWidgetAnimation->m_endAnimationDelegate;
+}
+
+Delegate<EventArgs const&>& Widget::StartAnimation( WidgetAnimation const& widgetAnimation )
+{
+	if( m_currentWidgetAnimation )
+	{
+		delete m_currentWidgetAnimation;
+		m_currentWidgetAnimation = nullptr;
+	}
+
+	m_currentWidgetAnimation = new WidgetAnimation( widgetAnimation );
 	m_currentWidgetAnimation->m_endAnimationDelegate.SubscribeMethod( this, &Widget::EndAnimation );
 
 	return m_currentWidgetAnimation->m_endAnimationDelegate;

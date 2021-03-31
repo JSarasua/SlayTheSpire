@@ -11,6 +11,16 @@ WidgetAnimation::WidgetAnimation( Widget* widgetToAnimate, Transform const& fina
 	m_startingTransform = m_widgetToAnimate->m_widgetTransform;
 }
 
+WidgetAnimation::~WidgetAnimation()
+{
+
+}
+
+void WidgetAnimation::SetStartingTransform( Transform const& startingTransform )
+{
+	m_startingTransform = startingTransform;
+}
+
 void WidgetAnimation::Update( float deltaSeconds )
 {
 	m_currentTime += deltaSeconds;

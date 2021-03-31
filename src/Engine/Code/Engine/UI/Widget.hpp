@@ -41,6 +41,8 @@ public:
 
 	bool EndAnimation( EventArgs const& args );
 	Delegate<EventArgs const&>& StartAnimation( Transform const& finalTransform, float animationTime, eSmoothingFunction smoothingFunction );
+	Delegate<EventArgs const&>& StartAnimation( WidgetAnimation const& widgetAnimation );
+
 
 	//Mutators
 	void TransformWidget( Transform const& transform );
@@ -52,6 +54,7 @@ public:
 	void SetCanSelect( bool canSelect ) { m_canSelect = canSelect; }
 	void SetIsVisible( bool isVisible ) { m_isVisible = isVisible; }
 	void RemoveHoverAndSelected();
+	void SetTransform( Transform const& transform ) { m_widgetTransform = transform; }
 	void SetPosition( Vec2 const& position ) { m_widgetTransform.m_position = position; }
 	void SetText( std::string const& text ) { m_text = text; }
 	void SetTextSize( float textSize ) { m_textSize = textSize; }

@@ -15,7 +15,9 @@ class WidgetAnimation
 {
 public:
 	WidgetAnimation( Widget* widgetToAnimate, Transform const& finalTransform, float animationTime, eSmoothingFunction smoothingFunction );
+	~WidgetAnimation();
 
+	void SetStartingTransform( Transform const& startingTransform );
 	void Update( float deltaSeconds );
 	void UpdateWidgetTransform();
 	Vec3 UpdateVec3( Vec3 const& startVec3, Vec3 const& endVec3 );
