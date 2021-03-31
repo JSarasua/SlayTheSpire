@@ -80,6 +80,11 @@ float Atan2Degrees( float y, float x )
 	return ConvertRadiansToDegrees( atan2f( y, x ) );
 }
 
+float AsinDegrees( float value )
+{
+	return ConvertRadiansToDegrees( asinf( value ) );
+}
+
 float GetDistance2D( const Vec2& vectorA, const Vec2& vectorB )
 {
 	float diffX = vectorB.x - vectorA.x;
@@ -963,7 +968,7 @@ float SmoothStop5( float t )
 
 float SmoothStep3( float t )
 {
-	float smoothStep3 = 2*(t*t*t) - 3*(t*t);
+	float smoothStep3 = 3*(t*t) - 2*(t*t*t);
 	return smoothStep3;
 }
 

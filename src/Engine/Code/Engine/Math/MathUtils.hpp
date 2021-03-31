@@ -30,6 +30,7 @@ float		CosDegrees(float orientationDegrees);
 float		SinDegrees(float orientationDegrees);
 float		TanDegrees(float orientationDegrees);
 float		Atan2Degrees(float y, float x);
+float		AsinDegrees( float value );
 
 
 float		GetDistance2D(const Vec2& initialVec, const Vec2& secondVec);
