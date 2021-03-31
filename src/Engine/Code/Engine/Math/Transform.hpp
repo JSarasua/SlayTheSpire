@@ -5,6 +5,9 @@
 class Transform
 {
 public:
+	Transform() = default;
+	Transform( Vec3 const& pos, Vec3 const& pitchRollYaw, Vec3 scale );
+
 	void SetPosition( Vec3 const& pos );
 	void Translate( Vec3 const& translator );
 	void RotatePitchRollYawDegrees( float pitch, float roll, float yaw );

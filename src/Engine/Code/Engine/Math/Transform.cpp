@@ -3,6 +3,12 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Math/MatrixUtils.hpp"
 
+Transform::Transform( Vec3 const& pos, Vec3 const& pitchRollYaw, Vec3 scale ) :
+	m_position( pos ),
+	m_rotationPitchRollYawDegrees( pitchRollYaw ),
+	m_scale( scale )
+{}
+
 void Transform::SetPosition( Vec3 const& pos )
 {
 	m_position = pos;
