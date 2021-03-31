@@ -23,6 +23,15 @@ public:
 	};
 
 public:
+	~Delegate()
+	{
+		for( uint i = 0; i < m_subscriptions.size(); i++ )
+		{
+			m_subscriptions.erase( m_subscriptions.begin() + i );
+			i--;
+		}
+		m_subscriptions.clear();
+	}
 
 	//functor
 	void operator() ( ARGS const& ...args ) { Invoke( args... ); }
