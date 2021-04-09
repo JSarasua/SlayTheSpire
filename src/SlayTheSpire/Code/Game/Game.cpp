@@ -944,6 +944,10 @@ void Game::DoEnemyTurn()
 
 void Game::CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec2 const& startTangent, int countOfWidgets )
 {
+	Texture* headTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/PlaceholderArrow.png" );
+	Texture* bodyTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/PlaceholderArrowBody.png" );
+
+
 	m_startOfTargetChain = startPos;
 	m_endOfTargetChain = endPos;
 	m_startOfTargetChainTangent = startTangent;
@@ -965,7 +969,7 @@ void Game::CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec
 		Transform widgetTransform = Transform( position, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
 		Widget* widget = new Widget( widgetTransform, nullptr );
 		widget->SetCanHover( false );
-		widget->SetTexture( m_redTexture, m_redTexture, m_redTexture );
+		widget->SetTexture( bodyTexture, bodyTexture, bodyTexture );
 		m_targetBodyWidgets.push_back( widget );
 
 		rootWidget->AddChild( widget );
@@ -979,7 +983,7 @@ void Game::CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec
 	Transform widgetTransform = Transform( m_endOfTargetChain, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
 	Widget* widget = new Widget( widgetTransform, nullptr );
 	widget->SetCanHover( false );
-	widget->SetTexture( m_cyanTexture, m_cyanTexture, m_cyanTexture );
+	widget->SetTexture( headTexture, headTexture, headTexture );
 	rootWidget->AddChild( widget );
 	m_targetHeadWidget = widget;
 }
