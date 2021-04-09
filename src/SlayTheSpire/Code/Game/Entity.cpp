@@ -157,6 +157,19 @@ void Entity::TakeDamage( int damage )
 	g_theEventSystem->FireEvent( "checkFightOver", NOCONSOLECOMMAND, nullptr );
 }
 
+int Entity::GetDamagePostStrength( int damage ) const
+{
+	if( damage > 0 )
+	{
+		return m_strength + damage;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
+
 void Entity::AddStatus( eStatus status )
 {
 	StatusDefinition const& statusDef = StatusDefinition::GetStatusDefinitionByType( status );

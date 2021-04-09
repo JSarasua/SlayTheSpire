@@ -37,6 +37,7 @@ Enemy::Enemy( EnemyDefinition const* enemyDef ) :
 		m_entityWidget->SetTexture( enemyTexture, nullptr, nullptr );
 		
 		m_maxHealth = m_enemyDef->GetMaxHealth();
+		m_health = m_maxHealth;
 	}
 
 	Transform intentTransform;
@@ -70,10 +71,10 @@ void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 	m_intentWidget->SetTexture( moveTexture, nullptr, nullptr );
 
 	int attackDamage = m_currentEnemyMove.m_damage;
-	if( m_currentEnemyMove.m_moveType == Attack )
+	int damagePostStrength = GetDamagePostStrength( attackDamage );
+	if( attackDamage > 0 )
 	{
-		attackDamage = GetDamagePostStrength( attackDamage );
-		m_intentTextWidget->SetText( Stringf( "%i", attackDamage ) );
+		m_intentTextWidget->SetText( Stringf( "%i", damagePostStrength ) );
 	}
 	else
 	{
@@ -87,6 +88,16 @@ void Enemy::Reset()
 	Entity::Reset();
 	m_actionsDone = 0;
 	UpdateEnemyMove( g_theGame->m_rand );
+}
+
+void Enemy::SetEnemyDef( EnemyDefinition const* enemyDef )
+{
+	m_enemyDef = enemyDef;
+	Texture const* enemyTexture = m_enemyDef->GetTexture();
+	m_entityWidget->SetTexture( enemyTexture, nullptr, nullptr );
+
+	m_maxHealth = m_enemyDef->GetMaxHealth();
+	m_health = m_maxHealth;
 }
 
 bool Enemy::BeginAttack( EventArgs const& args )

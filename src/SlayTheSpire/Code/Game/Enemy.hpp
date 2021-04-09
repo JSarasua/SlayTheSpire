@@ -18,6 +18,7 @@ public:
 	EnemyMove const& GetEnemyMove() const { return m_currentEnemyMove; }
 
 	virtual void Reset() override;
+	void SetEnemyDef( EnemyDefinition const* enemyDef );
 
 	bool BeginAttack( EventArgs const& args );
 	bool BeginStopAttack( EventArgs const& args );

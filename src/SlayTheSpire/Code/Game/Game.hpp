@@ -27,6 +27,7 @@ public:
 	void Render();
 
 	bool RestartGame( EventArgs const& args );
+	bool LoadNextFight( EventArgs const& args );
 	bool StartPlayerEndTurn( EventArgs const& args );
 	bool EndPlayerEndTurn( EventArgs const& args );
 	bool StartEnemyTurn( EventArgs const& args );

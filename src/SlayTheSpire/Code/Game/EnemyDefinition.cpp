@@ -29,7 +29,23 @@ void EnemyDefinition::InitializeEnemyDefinitions()
 	cultistMoves.push_back( attackMove );
 	Texture const* cultistTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Cultist.png" );
 
-	s_enemyDefs[Cultist] = EnemyDefinition( cultistOrderedMoves, cultistMoves, 80, cultistTexture );
+	std::vector<EnemyMove> jawWormOrderedMoves;
+	//StatusDefinition const& ritualDef = StatusDefinition::GetStatusDefinitionByType( Ritual );
+	EnemyMove jawWormChompMove = EnemyMove( Attack, 11, 0, 0, false, false, &invalidDef );
+	jawWormOrderedMoves.push_back( jawWormChompMove );
+
+	std::vector<EnemyMove> jawWormMoves;
+	//StatusDefinition const& ritualDef = StatusDefinition::GetStatusDefinitionByType( Ritual );
+	EnemyMove jawWormThrashMove = EnemyMove( AttackDefend, 7, 5, 0, false, false, &invalidDef );
+	EnemyMove jawWormBellowMove = EnemyMove( BuffDefend, 0, 6, 3, false, false, &invalidDef );
+	jawWormMoves.push_back( jawWormChompMove );
+	jawWormMoves.push_back( jawWormThrashMove );
+	jawWormMoves.push_back( jawWormBellowMove );
+	Texture const* jawWormTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/JawWorm.png" );
+
+
+	s_enemyDefs[Cultist] = EnemyDefinition( cultistOrderedMoves, cultistMoves, 48, cultistTexture );
+	s_enemyDefs[JawWorm] = EnemyDefinition( jawWormOrderedMoves, jawWormMoves, 40, jawWormTexture );
 }
 
 EnemyMove EnemyDefinition::GetNextMove( RandomNumberGenerator& rng, int moveTurn ) const

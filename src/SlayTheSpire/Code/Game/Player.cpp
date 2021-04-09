@@ -3,6 +3,7 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/RenderContext.hpp"
 #include "Engine/UI/Widget.hpp"
+#include "Engine/UI/WidgetGrid.hpp"
 
 Player::Player( Widget* parentWidget, 
 	Vec2 const& positionRelativeToParent, 
@@ -29,5 +30,16 @@ void Player::Reset()
 {
 	Entity::Reset();
 	m_playerBoard.Reset();
+}
+
+void Player::ResetNoHealth()
+{
+	m_strength = 0;
+	m_block = 0;
+	m_currentStatuses.clear();
+	m_statusEffectsWidget->ClearChildren();
+	m_strengthWidget = nullptr;
+	m_playerBoard.Reset();
+	
 }
 

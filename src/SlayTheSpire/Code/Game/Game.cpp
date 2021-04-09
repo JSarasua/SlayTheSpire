@@ -56,7 +56,8 @@ void Game::Startup()
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
 
 	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
-	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
+	//g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
+	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::LoadNextFight );
 }
 
 void Game::Shutdown()
@@ -130,6 +131,24 @@ bool Game::RestartGame( EventArgs const& args )
 	return true;
 }
 
+bool Game::LoadNextFight( EventArgs const& args )
+{
+	UNUSED( args );
+
+	m_endFightWidget->SetIsVisible( false );
+	m_endFightWidget->SetCanHover( false );
+
+	//m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_player.ResetNoHealth();
+	EnemyDefinition const& nextEnemyDef = EnemyDefinition::GetEnemyDefinitionByType( JawWorm );
+	m_currentGamestate->m_enemy.SetEnemyDef( &nextEnemyDef );
+	m_currentGamestate->m_enemy.Reset();
+
+	m_isUIDirty = true;
+
+	return true;
+}
+
 bool Game::StartPlayerEndTurn( EventArgs const& args )
 {
  	//PlayerBoard const& playerBoard = m_currentGamestate->m_player.m_playerBoard;
@@ -189,10 +208,10 @@ bool Game::EnemyDealDamage( EventArgs const& args )
 	enemy.ResetBlock();
 
 	EnemyMove const& move = enemy.GetEnemyMove();
-	eStatus status = move.m_statusDef->m_statusType;
 
 	enemy.UpdateStatuses();
-
+	
+	eStatus status = move.m_statusDef->m_statusType;
 	if( status == Ritual )
 	{
 		enemy.AddStatus( status );
@@ -205,8 +224,10 @@ bool Game::EnemyDealDamage( EventArgs const& args )
 	int damage = move.m_damage;
 	damage = enemy.GetDamagePostStrength( damage );
 	int block = move.m_block;
+	int strength = move.m_strength;
 	player.TakeDamage( damage );
 	enemy.GainBlock( block );
+	enemy.AddStength( strength );
 
 	return true;
 }
