@@ -82,6 +82,13 @@ void UIManager::Update( float deltaSeconds )
 	Vec2 mousePos = g_theInput->GetMouseNormalizedPos();
 	mousePos = m_screenBounds.GetPointAtUV( mousePos );
 
+	DebuggerPrintf( "Update UIManager\n");
 	m_rootWidget->Update( deltaSeconds, mousePos );
+}
+
+void UIManager::EndFrame()
+{
+	DebuggerPrintf( "EndFrame UIManager\n" );
+	m_rootWidget->CleanUpChildren();
 }
 

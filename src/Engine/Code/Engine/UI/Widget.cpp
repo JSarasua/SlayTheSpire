@@ -31,7 +31,11 @@ Widget::Widget( AABB2 screenBounds )
 
 Widget::~Widget()
 {
-	m_parentWidget = nullptr;
+	if( m_parentWidget )
+	{
+		m_parentWidget->RemoveChildWidget( this );
+		m_parentWidget = nullptr;
+	}
 
 	for( Widget* childWidget : m_childWidgets )
 	{
@@ -362,8 +366,9 @@ void Widget::CheckInput()
 
 		FireSelectEvents();
 	}
-	if( leftMouseButton.IsPressed() && m_isHovered )
+	if( leftMouseButton.IsPressed() && m_isHovered && m_canSelect )
 	{
+		FireSelectedEvents();
 	}
 	if( leftMouseButton.WasJustReleased() )
 	{
@@ -472,8 +477,46 @@ void Widget::RemoveChildWidget( Widget* childWidget )
 	}
 }
 
+void Widget::CleanUpChildren()
+{
+	int widgetIndex = 0;
+	while( widgetIndex < m_childWidgets.size() )
+	{
+		Widget* childWidget = m_childWidgets[widgetIndex];
+		if( childWidget->GetIsGarbage() )
+		{
+			delete childWidget;
+		}
+		else
+		{
+			widgetIndex++;
+		}
+	}
+
+	for( Widget* childWidget : m_childWidgets )
+	{
+		childWidget->CleanUpChildren();
+	}
+}
+
+void Widget::FireSelectedEvents()
+{
+	Vec2 currentPos = m_widgetTransform.m_position;
+	currentPos = GetWorldCenter();
+	m_selectedArgs.SetValue( "currentPos", currentPos );
+	m_selectedArgs.SetValue( "mousePos", m_currentMousePosition );
+
+	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
+	g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
+	m_selectedDelegate.Invoke( m_selectedArgs );
+}
+
 void Widget::FireSelectEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_selectArgs.SetValue( "currentPos", currentPos );
+	m_selectArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
 	g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
 	m_selectDelegate.Invoke( m_selectArgs );
@@ -481,11 +524,19 @@ void Widget::FireSelectEvents()
 
 void Widget::FireHoverEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_hoverArgs.SetValue( "currentPos", currentPos );
+	m_hoverArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	m_hoverDelegate.Invoke( m_hoverArgs );
 }
 
 void Widget::FireReleaseEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_releaseArgs.SetValue( "currentPos", currentPos );
+	m_releaseArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	m_releaseDelegate.Invoke( m_releaseArgs );
 }
 

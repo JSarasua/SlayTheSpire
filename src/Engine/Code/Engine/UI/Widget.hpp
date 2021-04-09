@@ -92,12 +92,19 @@ public:
 
 	Widget* GetParentWidget() { return m_parentWidget; }
 	void RemoveChildWidget( Widget* childWidget );
+
+	void CleanUpChildren();
+	void MarkGarbage() { m_isGarbage = true; }
 private:
+	void FireSelectedEvents();
 	void FireSelectEvents();
 	void FireHoverEvents();
 	void FireReleaseEvents();
 
+	bool GetIsGarbage() const { return m_isGarbage; }
+
 protected:
+	bool m_isGarbage;
 	Widget* m_parentWidget = nullptr;
 	std::vector<Widget*> m_childWidgets;
 
@@ -129,10 +136,12 @@ protected:
 
 public:
 	EventArgs m_selectArgs;
+	EventArgs m_selectedArgs;
 	EventArgs m_releaseArgs;
 	EventArgs m_hoverArgs;
 
 	Delegate<EventArgs const&> m_selectDelegate;
+	Delegate<EventArgs const&> m_selectedDelegate;
 	Delegate<EventArgs const&> m_releaseDelegate;
 	Delegate<EventArgs const&> m_hoverDelegate;
 
