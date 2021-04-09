@@ -102,6 +102,7 @@ void Game::Update()
 	m_currentGamestate->Update( dt );
 
 	//UpdateCamera( dt );
+	g_theUIManager->EndFrame();
 }
 
 void Game::Render()
@@ -145,7 +146,6 @@ bool Game::StartPlayerEndTurn( EventArgs const& args )
 		toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
 
 		Delegate<EventArgs const&>& endAnimationDelegate = childWidget->StartAnimation( toDiscardPileTransform, 0.5f * animationSpeed, eSmoothingFunction::SMOOTHSTART3 );
-		
 		if( childWidget == childWidgets.back() )
 		{
 			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayerEndTurn );
@@ -256,7 +256,11 @@ bool Game::StartStartPlayerTurn( EventArgs const& args )
 		releaseArgs.SetValue( "cardType", (int)cardType );
 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
 
 		m_handWidget->AddChild( cardWidget );
 
@@ -406,6 +410,36 @@ bool Game::FightOver( EventArgs const& args )
 	return true;
 }
 
+bool Game::UpdateTargeting( EventArgs const& args )
+{
+	Vec2 startPos = args.GetValue( "currentPos", Vec2() );
+	Vec2 endPos = args.GetValue( "mousePos", Vec2() );
+	Vec2 startTangent = Vec2( 0.f, 1.f );
+
+	if( m_isTargeting )
+	{
+		UpdateTargetingWidgets( endPos );
+	}
+	else
+	{
+		DebuggerPrintf( "Creating TargetingWidgets\n" );
+		m_isTargeting = true;
+		CreateTargetingWidgets( startPos, endPos, startTangent, 10 );
+	}
+
+	return true;
+}
+
+bool Game::ReleaseTargeting( EventArgs const& args )
+{
+	UNUSED( args );
+	DebuggerPrintf( "Releasing TargetingWidgets\n" );
+	ClearTargetingWidgets();
+	m_isTargeting = false;
+
+	return false;
+}
+
 void Game::InitializeDefinitions()
 {
 	MoveTypeDefinition::InitializeMoveTypeDefs();
@@ -462,7 +496,11 @@ void Game::MatchUIToGameState()
 		releaseArgs.SetValue( "cardType", (int)cardType );
 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
 
 		m_handWidget->AddChild( cardWidget );
 	}
@@ -902,4 +940,95 @@ void Game::DoEnemyTurn()
 	Enemy& enemy = m_currentGamestate->m_enemy;
 	enemy.UpdateEnemyMove( m_rand );
 	StartStartPlayerTurn( EventArgs() );
+}
+
+void Game::CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec2 const& startTangent, int countOfWidgets )
+{
+	m_startOfTargetChain = startPos;
+	m_endOfTargetChain = endPos;
+	m_startOfTargetChainTangent = startTangent;
+
+	float interval = 1.f / (float)countOfWidgets;
+
+	Widget* rootWidget = g_theUIManager->GetRootWidget();
+	Vec2 previousPosition = m_startOfTargetChain;
+	Vec2 currentTangent = m_startOfTargetChainTangent;
+
+	float currentAngle = currentTangent.GetAngleDegrees();
+	currentAngle -= 90.f;
+	for( size_t widgetIndex = 0; widgetIndex < countOfWidgets; widgetIndex++ )
+	{
+		float tValue = (float)widgetIndex * interval;
+
+		Vec2 position = QuadraticBezierCurveUsingStartTangent( m_startOfTargetChain, m_startOfTargetChainTangent, 1.f, m_endOfTargetChain, tValue );
+
+		Transform widgetTransform = Transform( position, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+		Widget* widget = new Widget( widgetTransform, nullptr );
+		widget->SetCanHover( false );
+		widget->SetTexture( m_redTexture, m_redTexture, m_redTexture );
+		m_targetBodyWidgets.push_back( widget );
+
+		rootWidget->AddChild( widget );
+
+		currentTangent = position - previousPosition;
+		currentTangent.Normalize();
+		currentAngle = currentTangent.GetAngleDegrees() - 90.f;
+		previousPosition = position;
+	}
+
+	Transform widgetTransform = Transform( m_endOfTargetChain, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+	Widget* widget = new Widget( widgetTransform, nullptr );
+	widget->SetCanHover( false );
+	widget->SetTexture( m_cyanTexture, m_cyanTexture, m_cyanTexture );
+	rootWidget->AddChild( widget );
+	m_targetHeadWidget = widget;
+}
+
+void Game::UpdateTargetingWidgets( Vec2 const& endPos )
+{
+	m_endOfTargetChain = endPos;
+	int countOfWidgets = (int)m_targetBodyWidgets.size();
+	//ClearTargetingWidgets();
+	//CreateTargetingWidgets( m_startOfTargetChain, m_endOfTargetChain, m_startOfTargetChainTangent, countOfWidgets );
+
+	float interval = 1.f / (float)countOfWidgets;
+	Vec2 previousPosition = m_startOfTargetChain;
+	Vec2 currentTangent = m_startOfTargetChainTangent;
+
+	float currentAngle = currentTangent.GetAngleDegrees();
+	currentAngle -= 90.f;
+	for( size_t widgetIndex = 0; widgetIndex < countOfWidgets; widgetIndex++ )
+	{
+		float tValue = (float)widgetIndex * interval;
+
+		Vec2 position = QuadraticBezierCurveUsingStartTangent( m_startOfTargetChain, m_startOfTargetChainTangent, 1.f, m_endOfTargetChain, tValue );
+
+		Transform widgetTransform = Transform( position, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+		Widget* widget = m_targetBodyWidgets[widgetIndex];
+		widget->SetTransform( widgetTransform );
+
+		currentTangent = position - previousPosition;
+		currentTangent.Normalize();
+		currentAngle = currentTangent.GetAngleDegrees() - 90.f;
+		previousPosition = position;
+	}
+
+	Transform headTransform = Transform( endPos, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+	m_targetHeadWidget->SetTransform( headTransform );
+}
+
+void Game::ClearTargetingWidgets()
+{
+	for( Widget* widget : m_targetBodyWidgets )
+	{
+		widget->MarkGarbage();
+	}
+	m_targetBodyWidgets.clear();
+
+	if( m_targetHeadWidget )
+	{
+		m_targetHeadWidget->MarkGarbage();
+		m_targetHeadWidget = nullptr;
+	}
+
 }
