@@ -14,6 +14,7 @@ public:
 
 	void InitializePlayerBoard();
 
+	void AddCardToPermanentDeck( eCard card );
 	void AddCardToDeckAndShuffle( eCard card );
 	void AddCardToDiscardPile( eCard card );
 	void RemoveCardFromDeck( eCard card );

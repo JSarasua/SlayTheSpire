@@ -6,6 +6,7 @@ enum eCard
 {
 	Strike,
 	Defend,
+	//SpotWeakness,
 	NUM_CARDS
 };
 

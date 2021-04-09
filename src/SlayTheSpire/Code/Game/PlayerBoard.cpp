@@ -20,6 +20,11 @@ void PlayerBoard::InitializePlayerBoard()
 	m_playerBlock = 0;
 }
 
+void PlayerBoard::AddCardToPermanentDeck( eCard card )
+{
+	m_permanentDeck.AddCard( card );
+}
+
 void PlayerBoard::AddCardToDeckAndShuffle( eCard card )
 {
 	m_deck.push_back( card );
