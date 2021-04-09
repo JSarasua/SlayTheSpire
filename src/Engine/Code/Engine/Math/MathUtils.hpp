@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 struct FloatRange;
 struct Vec2;
@@ -115,3 +116,11 @@ float SmoothStop3( float t );	// [0, 1] cubic ease-out
 float SmoothStop4( float t );	// [0, 1] quartic ease-out
 float SmoothStop5( float t );	// [0, 1] quintic ease-out
 float SmoothStep3( float t );	// [0, 1] quadratic ease-in-out
+
+//a = start
+//b = pulling position
+//c = end
+float QuadraticBezierCurve1D( float a, float b, float c, float t );
+Vec2 QuadraticBezierCurve( Vec2 const& aPos, Vec2 const& bPos, Vec2 const& cPos, float t );
+Vec2 QuadraticBezierCurve( Vec2 const& aPos, float pushValueRelativeToLength, Vec2 const& cPos, float t );
+Vec2 QuadraticBezierCurveUsingStartTangent( Vec2 const& aPos, Vec2 const& aTan, float pushValueRelativeToLength, Vec2 const& cPos, float t );
