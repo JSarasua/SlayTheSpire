@@ -50,12 +50,14 @@ Enemy::Enemy( EnemyDefinition const* enemyDef ) :
 	intentTextTransform.m_scale = Vec3( 0.4f, 0.4f, 1.f );
 	intentTextTransform.m_position = m_intentWidget->GetLocalAABB2().GetPointAtUV( Vec2( 0.1f, 0.1f ) );
 	m_intentTextWidget = new Widget( intentTextTransform );
-	m_intentTextWidget->SetTextSize( 0.4f );
+	m_intentTextWidget->SetTextSize( 0.15f );
 	m_intentWidget->AddChild( m_intentTextWidget );
 	m_intentWidget->SetCanHover( false );
 	m_intentTextWidget->SetCanHover( false );
 
-	Texture const* moveTexture = MoveTypeDefinition::GetMoveTypeDefinitionByType( m_currentEnemyMove.m_moveType ).m_moveTypeTexture;
+	
+	m_currentIntent = &MoveTypeDefinition::GetMoveTypeDefinitionByType( m_currentEnemyMove.m_moveType );
+	Texture const* moveTexture = m_currentIntent->m_moveTypeTexture;
 	m_intentWidget->SetTexture( moveTexture, nullptr, nullptr );
 }
 
@@ -67,7 +69,8 @@ void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 	m_actionsDone++;
 	m_currentEnemyMove = m_enemyDef->GetNextMove( rng, m_actionsDone );
 
-	Texture const* moveTexture = MoveTypeDefinition::GetMoveTypeDefinitionByType( m_currentEnemyMove.m_moveType ).m_moveTypeTexture;
+	m_currentIntent = &MoveTypeDefinition::GetMoveTypeDefinitionByType( m_currentEnemyMove.m_moveType );
+	Texture const* moveTexture = m_currentIntent->m_moveTypeTexture;
 	m_intentWidget->SetTexture( moveTexture, nullptr, nullptr );
 
 	int attackDamage = m_currentEnemyMove.m_damage;

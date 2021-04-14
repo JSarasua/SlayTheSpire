@@ -28,7 +28,7 @@ public:
 	int m_actionsDone = 0;
 	EnemyMove m_currentEnemyMove;
 	Transform m_startTransform;
-
+	MoveTypeDefinition const* m_currentIntent = nullptr;
 private:
 	Widget* m_intentWidget = nullptr;
 	Widget* m_intentTextWidget = nullptr;

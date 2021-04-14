@@ -41,6 +41,7 @@ public:
 	bool FightOver( EventArgs const& args );
 	bool UpdateTargeting( EventArgs const& args );
 	bool ReleaseTargeting( EventArgs const& args );
+	bool AddCardToPlayerPermanentDeck( EventArgs const& args );
 
 private:
 	void InitializeDefinitions();
@@ -62,6 +63,8 @@ private:
 	void CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec2 const& startTangent, int countOfWidgets );
 	void UpdateTargetingWidgets( Vec2 const& endPos );
 	void ClearTargetingWidgets();
+	void GenerateAndDisplayEndFightAddCardsWidgets();
+	void ClearEndFightWidgets();
 
 
 private:
@@ -84,6 +87,10 @@ private:
 	Widget* m_endTurnWidget = nullptr;
 
 	Widget* m_endFightWidget = nullptr;
+	Widget* m_endFightTextWidget = nullptr;
+	Widget* m_endFightCard1Widget = nullptr;
+	Widget* m_endFightCard2Widget = nullptr;
+	Widget* m_endFightCard3Widget = nullptr;
 
 	bool m_isUIDirty = false;
 

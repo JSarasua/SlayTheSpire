@@ -42,7 +42,7 @@ Entity::Entity( Widget* parentWidget,
 	m_blockWidget->SetTexture( blockTexture, nullptr, nullptr );
 	m_blockWidget->SetCanHover( false );
 	m_blockWidget->SetText( "0" );
-	m_blockWidget->SetTextSize( 0.4f );
+	m_blockWidget->SetTextSize( 0.2f );
 	m_healthWidget->AddChild( m_blockWidget );
 
 	Transform statusTransform = Transform();
@@ -82,7 +82,7 @@ Entity::Entity()
 	m_blockWidget->SetTexture( blockTexture, nullptr, nullptr );
 	m_blockWidget->SetCanHover( false );
 	m_blockWidget->SetText( "0" );
-	m_blockWidget->SetTextSize( 0.4f );
+	m_blockWidget->SetTextSize( 0.2f );
 	m_healthWidget->AddChild( m_blockWidget );
 
 	Transform statusTransform = Transform();
@@ -208,7 +208,7 @@ void Entity::AddStength( int strength )
 			m_strengthWidget->SetCanDrag( false );
 			m_strengthWidget->SetTexture( strengthTexture, nullptr, nullptr );
 			m_strengthWidget->SetText( Stringf( "%i", m_strength ) );
-			m_strengthWidget->SetTextSize( 0.3f );
+			m_strengthWidget->SetTextSize( 0.1f );
 			m_statusEffectsWidget->AddChild( m_strengthWidget );
 		}
 	}

@@ -56,8 +56,8 @@ void Game::Startup()
 	g_theEventSystem->SubscribeMethodToEvent( "endTurn", NOCONSOLECOMMAND, this, &Game::EndTurn );
 
 	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
-	//g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
-	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::LoadNextFight );
+	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
+	g_theEventSystem->SubscribeMethodToEvent( "loadNextFight", NOCONSOLECOMMAND, this, &Game::LoadNextFight );
 }
 
 void Game::Shutdown()
@@ -120,14 +120,17 @@ bool Game::RestartGame( EventArgs const& args )
 {
 	UNUSED( args );
 
-	m_endFightWidget->SetIsVisible( false );
-	m_endFightWidget->SetCanHover( false );
+	ClearEndFightWidgets();
+// 	m_endFightWidget->SetIsVisible( false );
+// 	m_endFightWidget->SetCanHover( false );
 
 	m_currentGamestate->m_player.Reset();
 	m_currentGamestate->m_enemy.Reset();
 
 	m_isUIDirty = true;
 
+
+	//m_endFightWidget->m_releaseDelegate.UnsubscribeObject( this );
 	return true;
 }
 
@@ -135,8 +138,14 @@ bool Game::LoadNextFight( EventArgs const& args )
 {
 	UNUSED( args );
 
-	m_endFightWidget->SetIsVisible( false );
-	m_endFightWidget->SetCanHover( false );
+	ClearEndFightWidgets();
+// 	m_endFightWidget->SetIsVisible( false );
+// 	m_endFightWidget->SetCanHover( false );
+// 
+// 	m_endFightTextWidget->MarkGarbage();
+// 	m_endFightCard1Widget->MarkGarbage();
+// 	m_endFightCard2Widget->MarkGarbage();
+// 	m_endFightCard3Widget->MarkGarbage();
 
 	//m_currentGamestate->m_player.Reset();
 	m_currentGamestate->m_player.ResetNoHealth();
@@ -329,7 +338,9 @@ bool Game::StartPlayCard( EventArgs const& args )
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
+	cardAttack = player.GetDamagePostStrength( cardAttack );
 	int cardBlock = cardDef.GetBlock();
+	bool isSpotWeakness = cardDef.GetIsSpotWeakness();
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
@@ -338,6 +349,19 @@ bool Game::StartPlayCard( EventArgs const& args )
 			enemy.TakeDamage( cardAttack );
 			player.GainBlock( cardBlock );
  			playerBoard.ConsumeEnergy( cardCost );
+
+			if( isSpotWeakness )
+			{
+				MoveTypeDefinition const* enemyIntent= enemy.m_currentIntent;
+				if( enemyIntent )
+				{
+					eMoveType enemyMoveType = enemyIntent->m_moveType;
+					if( enemyMoveType == Attack || enemyMoveType == AttackDefend )
+					{
+						player.AddStength( 3 );
+					}
+				}
+			}
 
 			Transform toDiscardPileTransform;
 			toDiscardPileTransform.m_position = Vec3( 6.f, 0.f, 0.f );
@@ -377,54 +401,57 @@ bool Game::FightOver( EventArgs const& args )
 	{
 		if( m_endFightWidget )
 		{
-			m_endFightWidget->SetText( "You Lose!" );
+			m_endFightWidget->SetText( "You Lose! Click to restart." );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
+			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
 		}
 		else
 		{
-			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 255 ) );
 
 			Transform endFightTransform;
 			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
 			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
 			m_endFightWidget->SetText( "You Lose! Click to restart." );
-			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetTextSize( 0.2f );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
 
-			m_endFightWidget->SetEventToFire( "restartFight" );
+			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
+			//m_endFightWidget->SetEventToFire( "restartFight" );
 		}
 		//You win!
 	}
 	else if( enemyHealth <= 0 )
 	{
-		//You lose!
 		if( m_endFightWidget )
 		{
 			m_endFightWidget->SetText( "You Win!" );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
+
+			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
 		else
 		{
-			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 255 ) );
 			Transform endFightTransform;
 			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
 			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
-			m_endFightWidget->SetText( "You Win! Click to restart." );
-			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetTextSize( 0.2f );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
-			m_endFightWidget->SetEventToFire( "restartFight" );
+
+			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
 	}
 
@@ -457,6 +484,14 @@ bool Game::ReleaseTargeting( EventArgs const& args )
 	DebuggerPrintf( "Releasing TargetingWidgets\n" );
 	ClearTargetingWidgets();
 	m_isTargeting = false;
+
+	return false;
+}
+
+bool Game::AddCardToPlayerPermanentDeck( EventArgs const& args )
+{
+	int cardIndex = args.GetValue( "cardIndex", 0 );
+	m_currentGamestate->m_player.m_playerBoard.AddCardToPermanentDeck( (eCard)cardIndex );
 
 	return false;
 }
@@ -592,12 +627,13 @@ void Game::StartupUI()
 	deckWidget->SetTexture( deckTexture, m_cyanTexture, m_redTexture );
 	deckWidget->SetCanHover( true );
 	deckWidget->SetText( "Hello" );
-	deckWidget->SetTextSize( 0.1f );
+	deckWidget->SetTextSize( 0.3f );
 	rootWidget->AddChild( deckWidget );
 	m_deckWidget = deckWidget;
 
 	//Energy
 	m_energyWidget = new Widget( *deckWidget );
+	m_energyWidget->SetTextSize( 0.15f );
 	m_energyWidget->SetTexture( energyStoneTexture, m_cyanTexture, m_redTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
 	m_energyWidget->SetCanHover( false );
@@ -617,7 +653,7 @@ void Game::StartupUI()
 	m_endTurnWidget->SetCanSelect( true );
 	m_endTurnWidget->SetEventToFire( "endTurn" );
 	m_endTurnWidget->SetText( "End Turn" );
-	m_endTurnWidget->SetTextSize( 0.1f );
+	m_endTurnWidget->SetTextSize( 0.15f );
 	m_endTurnWidget->SetTexture( buttonTexture, m_cyanTexture, m_redTexture );
 	rootWidget->AddChild( m_endTurnWidget );
 
@@ -1056,4 +1092,78 @@ void Game::ClearTargetingWidgets()
 		m_targetHeadWidget = nullptr;
 	}
 
+}
+
+void Game::GenerateAndDisplayEndFightAddCardsWidgets()
+{
+	Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 180, 180, 180, 255 ) );
+
+	Transform textTransform = Transform( Vec3(0.f, 3.f, 0.f ), Vec3(), Vec3( 4.f, 1.f, 1.f ) );
+	m_endFightTextWidget = new Widget( textTransform, nullptr );
+	m_endFightTextWidget->SetText( "Add a card" );
+	m_endFightTextWidget->SetTextSize( 0.3f );
+	m_endFightTextWidget->SetTexture( darkGreyTexture, nullptr, nullptr );
+	m_endFightTextWidget->SetCanHover( false );
+
+	Vec3 cardScale = Vec3( 3.f, 3.75f, 1.f );
+
+	Transform card1Transform = Transform( Vec3( -4.f, -1.f, 0.f ), Vec3(), cardScale );
+	Transform card2Transform = Transform( Vec3( 0.f, -1.f, 0.f ), Vec3(), cardScale );
+	Transform card3Transform = Transform( Vec3( 4.f, -1.f, 0.f ), Vec3(), cardScale );
+
+	m_endFightCard1Widget = new Widget( card1Transform, nullptr );
+	m_endFightCard2Widget = new Widget( card2Transform, nullptr );
+	m_endFightCard3Widget = new Widget( card3Transform, nullptr );
+
+
+	CardDefinition const& cardDef1 = CardDefinition::GetRandomCardDefinition();
+	CardDefinition const& cardDef2 = CardDefinition::GetRandomCardDefinition();
+	CardDefinition const& cardDef3 = CardDefinition::GetRandomCardDefinition();
+
+	m_endFightCard1Widget->SetTexture( cardDef1.GetCardTexture(), m_cyanTexture, m_redTexture );
+	m_endFightCard2Widget->SetTexture( cardDef2.GetCardTexture(), m_cyanTexture, m_redTexture );
+	m_endFightCard3Widget->SetTexture( cardDef3.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+	m_endFightCard1Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef1.GetCardType() );
+	m_endFightCard1Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard1Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+
+	m_endFightCard2Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef2.GetCardType() );
+	m_endFightCard2Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard2Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+	m_endFightCard3Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef3.GetCardType() );
+	m_endFightCard3Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard3Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+	//m_endFightWidget->SetEventToFire( "loadNextFight" );
+
+	m_endFightWidget->AddChild( m_endFightTextWidget );
+	m_endFightWidget->AddChild( m_endFightCard1Widget );
+	m_endFightWidget->AddChild( m_endFightCard2Widget );
+	m_endFightWidget->AddChild( m_endFightCard3Widget );
+}
+
+void Game::ClearEndFightWidgets()
+{
+	m_endFightWidget->SetIsVisible( false );
+	m_endFightWidget->SetCanHover( false );
+
+	if( m_endFightTextWidget )
+	{
+		m_endFightTextWidget->MarkGarbage();
+	}
+	if( m_endFightCard1Widget )
+	{
+		m_endFightCard1Widget->MarkGarbage();
+	}
+	if( m_endFightCard2Widget )
+	{
+		m_endFightCard2Widget->MarkGarbage();
+	}
+	if( m_endFightCard3Widget )
+	{
+		m_endFightCard3Widget->MarkGarbage();
+	}
 }
