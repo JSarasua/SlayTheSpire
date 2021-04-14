@@ -60,12 +60,14 @@ public:
 	void SetTextSize( float textSize ) { m_textSize = textSize; }
 	void ClearChildren();
 	void SetParent( Widget* parentWidget ) { m_parentWidget = parentWidget; }
+	void SetTextAlignment( Vec2 const& textAlignment ) { m_textAlignent = textAlignment; }
 
 	//Accessors
 	Transform GetTransform() const { return m_widgetTransform; }
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
 	Mat44 GetParentInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrixScaleOnlySelf() const;
+	Mat44 GetRelativeModelMatrixNoScale() const;
 	Mat44 GetInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrix() const;
 	Mat44 GetInverseModelMatrix() const;
@@ -92,12 +94,19 @@ public:
 
 	Widget* GetParentWidget() { return m_parentWidget; }
 	void RemoveChildWidget( Widget* childWidget );
+
+	void CleanUpChildren();
+	void MarkGarbage() { m_isGarbage = true; }
 private:
+	void FireSelectedEvents();
 	void FireSelectEvents();
 	void FireHoverEvents();
 	void FireReleaseEvents();
 
+	bool GetIsGarbage() const { return m_isGarbage; }
+
 protected:
+	bool m_isGarbage;
 	Widget* m_parentWidget = nullptr;
 	std::vector<Widget*> m_childWidgets;
 
@@ -111,6 +120,7 @@ protected:
 	std::string m_eventToFire;
 	//properties
 	std::string m_text;
+	Vec2 m_textAlignent = Vec2( 0.5f, 0.5f );
 	float m_textSize = 1.f;
 	bool m_isVisible = false;
 	bool m_isHovered = false;
@@ -129,10 +139,12 @@ protected:
 
 public:
 	EventArgs m_selectArgs;
+	EventArgs m_selectedArgs;
 	EventArgs m_releaseArgs;
 	EventArgs m_hoverArgs;
 
 	Delegate<EventArgs const&> m_selectDelegate;
+	Delegate<EventArgs const&> m_selectedDelegate;
 	Delegate<EventArgs const&> m_releaseDelegate;
 	Delegate<EventArgs const&> m_hoverDelegate;
 

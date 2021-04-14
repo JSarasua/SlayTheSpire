@@ -26,7 +26,7 @@ public:
 	void TakeDamage( int damage );
 	void GainBlock( int block ) { m_block += block; }
 	void ResetBlock() { m_block = 0; }
-	int GetDamagePostStrength ( int damage ) const { return m_strength + damage; }
+	int GetDamagePostStrength ( int damage ) const;
 	void AddStatus( eStatus status );
 	void AddStength( int strength );
 	void UpdateStatuses();

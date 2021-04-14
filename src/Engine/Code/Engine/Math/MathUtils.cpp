@@ -972,3 +972,48 @@ float SmoothStep3( float t )
 	return smoothStep3;
 }
 
+float QuadraticBezierCurve1D( float a, float b, float c, float t )
+{
+	float s = 1.f - t;
+	float value = s*s*a + 2.f*s*t*b + t*t*c;
+
+	return value;
+}
+
+Vec2 QuadraticBezierCurve( Vec2 const& aPos, Vec2 const& bPos, Vec2 const& cPos, float t )
+{
+	float s = 1.f - t;
+
+	float newX = QuadraticBezierCurve1D( aPos.x, bPos.x, cPos.x, t );
+	float newY = QuadraticBezierCurve1D( aPos.y, bPos.y, cPos.y, t );
+
+	Vec2 value = Vec2( newX, newY );
+
+
+	return value;
+}
+
+Vec2 QuadraticBezierCurve( Vec2 const& aPos, float pushValueRelativeToLength, Vec2 const& cPos, float t )
+{
+	Vec2 ac = cPos - aPos;
+	Vec2 acMidPoint = aPos + 0.5f * ac;
+	Vec2 acNorm = ac.GetRotated90Degrees();
+	acNorm.Normalize();
+	float pushValue = pushValueRelativeToLength * ac.GetLength();
+	Vec2 hPos = acNorm*pushValue + acMidPoint;
+
+	Vec2 bPos = hPos + acMidPoint*hPos;
+
+	return QuadraticBezierCurve( aPos, bPos, cPos, t );
+}
+
+Vec2 QuadraticBezierCurveUsingStartTangent( Vec2 const& aPos, Vec2 const& aTan, float pushValueRelativeToLength, Vec2 const& cPos, float t )
+{
+	Vec2 ac = cPos - aPos;
+	float acLength = ac.GetLength();
+	float pushValue = acLength * pushValueRelativeToLength;
+	Vec2 bPos = aPos + aTan* pushValue;
+
+	return QuadraticBezierCurve( aPos, bPos, cPos, t );
+}
+

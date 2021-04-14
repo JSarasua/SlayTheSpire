@@ -31,7 +31,11 @@ Widget::Widget( AABB2 screenBounds )
 
 Widget::~Widget()
 {
-	m_parentWidget = nullptr;
+	if( m_parentWidget )
+	{
+		m_parentWidget->RemoveChildWidget( this );
+		m_parentWidget = nullptr;
+	}
 
 	for( Widget* childWidget : m_childWidgets )
 	{
@@ -119,6 +123,20 @@ Mat44 Widget::GetRelativeModelMatrixScaleOnlySelf() const
 	return parentRelativeMatrixNoScale;
 }
 
+Mat44 Widget::GetRelativeModelMatrixNoScale() const
+{
+	Mat44 parentRelativeMatrixNoScale;
+	if( m_parentWidget )
+	{
+		parentRelativeMatrixNoScale = m_parentWidget->GetParentRelativeModelMatrixNoScale();
+	}
+
+	Mat44 myLocalMatrix = m_widgetTransform.ToMatrixNoScale();
+
+	parentRelativeMatrixNoScale.TransformBy( myLocalMatrix );
+	return parentRelativeMatrixNoScale;
+}
+
 Mat44 Widget::GetInverseModelMatrixNoScale() const
 {
 	Mat44 parentInverseMatrixNoScale;
@@ -168,10 +186,18 @@ void Widget::Render()
 
 			if( m_text.size() > 0 )
 			{
-				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
-				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
+				Mat44 textModelMatrix = GetRelativeModelMatrixNoScale();
+				context->SetModelMatrix( textModelMatrix );
+				AABB2 textBox = GetLocalAABB2();
+				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, m_textAlignent );
 
 			}
+// 			if( m_text.size() > 0 )
+// 			{
+// 				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
+// 				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
+// 
+// 			}
 		}
 	}
 
@@ -362,8 +388,9 @@ void Widget::CheckInput()
 
 		FireSelectEvents();
 	}
-	if( leftMouseButton.IsPressed() && m_isHovered )
+	if( leftMouseButton.IsPressed() && m_isHovered && m_canSelect )
 	{
+		FireSelectedEvents();
 	}
 	if( leftMouseButton.WasJustReleased() )
 	{
@@ -472,8 +499,46 @@ void Widget::RemoveChildWidget( Widget* childWidget )
 	}
 }
 
+void Widget::CleanUpChildren()
+{
+	int widgetIndex = 0;
+	while( widgetIndex < m_childWidgets.size() )
+	{
+		Widget* childWidget = m_childWidgets[widgetIndex];
+		if( childWidget->GetIsGarbage() )
+		{
+			delete childWidget;
+		}
+		else
+		{
+			widgetIndex++;
+		}
+	}
+
+	for( Widget* childWidget : m_childWidgets )
+	{
+		childWidget->CleanUpChildren();
+	}
+}
+
+void Widget::FireSelectedEvents()
+{
+	Vec2 currentPos = m_widgetTransform.m_position;
+	currentPos = GetWorldCenter();
+	m_selectedArgs.SetValue( "currentPos", currentPos );
+	m_selectedArgs.SetValue( "mousePos", m_currentMousePosition );
+
+	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
+	g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
+	m_selectedDelegate.Invoke( m_selectedArgs );
+}
+
 void Widget::FireSelectEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_selectArgs.SetValue( "currentPos", currentPos );
+	m_selectArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	g_theEventSystem->FireEvent( m_eventToFire, NOCONSOLECOMMAND, nullptr );
 	g_theEventSystem->FireEvent( m_eventToFire, CONSOLECOMMAND, nullptr );
 	m_selectDelegate.Invoke( m_selectArgs );
@@ -481,11 +546,19 @@ void Widget::FireSelectEvents()
 
 void Widget::FireHoverEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_hoverArgs.SetValue( "currentPos", currentPos );
+	m_hoverArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	m_hoverDelegate.Invoke( m_hoverArgs );
 }
 
 void Widget::FireReleaseEvents()
 {
+	Vec2 currentPos = m_widgetTransform.m_position;
+	m_releaseArgs.SetValue( "currentPos", currentPos );
+	m_releaseArgs.SetValue( "mousePos", m_currentMousePosition );
+
 	m_releaseDelegate.Invoke( m_releaseArgs );
 }
 

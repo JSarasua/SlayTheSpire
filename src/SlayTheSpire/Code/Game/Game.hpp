@@ -27,6 +27,7 @@ public:
 	void Render();
 
 	bool RestartGame( EventArgs const& args );
+	bool LoadNextFight( EventArgs const& args );
 	bool StartPlayerEndTurn( EventArgs const& args );
 	bool EndPlayerEndTurn( EventArgs const& args );
 	bool StartEnemyTurn( EventArgs const& args );
@@ -38,6 +39,9 @@ public:
 	bool StartPlayCard( EventArgs const& args );
 	bool EndPlayCard( EventArgs const& args );
 	bool FightOver( EventArgs const& args );
+	bool UpdateTargeting( EventArgs const& args );
+	bool ReleaseTargeting( EventArgs const& args );
+	bool AddCardToPlayerPermanentDeck( EventArgs const& args );
 
 private:
 	void InitializeDefinitions();
@@ -55,6 +59,12 @@ private:
 	std::vector<Transform> GetGoalHandTransforms( int handCount );
 
 	void DoEnemyTurn();
+
+	void CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec2 const& startTangent, int countOfWidgets );
+	void UpdateTargetingWidgets( Vec2 const& endPos );
+	void ClearTargetingWidgets();
+	void GenerateAndDisplayEndFightAddCardsWidgets();
+	void ClearEndFightWidgets();
 
 
 private:
@@ -77,8 +87,19 @@ private:
 	Widget* m_endTurnWidget = nullptr;
 
 	Widget* m_endFightWidget = nullptr;
+	Widget* m_endFightTextWidget = nullptr;
+	Widget* m_endFightCard1Widget = nullptr;
+	Widget* m_endFightCard2Widget = nullptr;
+	Widget* m_endFightCard3Widget = nullptr;
 
 	bool m_isUIDirty = false;
+
+	std::vector<Widget*> m_targetBodyWidgets;
+	Widget* m_targetHeadWidget = nullptr;
+	Vec2 m_startOfTargetChain;
+	Vec2 m_startOfTargetChainTangent;
+	Vec2 m_endOfTargetChain;
+	bool m_isTargeting = false;
 
 public:
 	Rgba8 m_clearColor = Rgba8::BLACK;

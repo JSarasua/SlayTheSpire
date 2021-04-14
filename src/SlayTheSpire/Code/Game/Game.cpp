@@ -57,6 +57,7 @@ void Game::Startup()
 
 	g_theEventSystem->SubscribeMethodToEvent( "checkFightOver", NOCONSOLECOMMAND, this, &Game::FightOver );
 	g_theEventSystem->SubscribeMethodToEvent( "restartFight", NOCONSOLECOMMAND, this, &Game::RestartGame );
+	g_theEventSystem->SubscribeMethodToEvent( "loadNextFight", NOCONSOLECOMMAND, this, &Game::LoadNextFight );
 }
 
 void Game::Shutdown()
@@ -102,6 +103,7 @@ void Game::Update()
 	m_currentGamestate->Update( dt );
 
 	//UpdateCamera( dt );
+	g_theUIManager->EndFrame();
 }
 
 void Game::Render()
@@ -118,10 +120,37 @@ bool Game::RestartGame( EventArgs const& args )
 {
 	UNUSED( args );
 
-	m_endFightWidget->SetIsVisible( false );
-	m_endFightWidget->SetCanHover( false );
+	ClearEndFightWidgets();
+// 	m_endFightWidget->SetIsVisible( false );
+// 	m_endFightWidget->SetCanHover( false );
 
 	m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_enemy.Reset();
+
+	m_isUIDirty = true;
+
+
+	//m_endFightWidget->m_releaseDelegate.UnsubscribeObject( this );
+	return true;
+}
+
+bool Game::LoadNextFight( EventArgs const& args )
+{
+	UNUSED( args );
+
+	ClearEndFightWidgets();
+// 	m_endFightWidget->SetIsVisible( false );
+// 	m_endFightWidget->SetCanHover( false );
+// 
+// 	m_endFightTextWidget->MarkGarbage();
+// 	m_endFightCard1Widget->MarkGarbage();
+// 	m_endFightCard2Widget->MarkGarbage();
+// 	m_endFightCard3Widget->MarkGarbage();
+
+	//m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_player.ResetNoHealth();
+	EnemyDefinition const& nextEnemyDef = EnemyDefinition::GetEnemyDefinitionByType( JawWorm );
+	m_currentGamestate->m_enemy.SetEnemyDef( &nextEnemyDef );
 	m_currentGamestate->m_enemy.Reset();
 
 	m_isUIDirty = true;
@@ -145,7 +174,6 @@ bool Game::StartPlayerEndTurn( EventArgs const& args )
 		toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
 
 		Delegate<EventArgs const&>& endAnimationDelegate = childWidget->StartAnimation( toDiscardPileTransform, 0.5f * animationSpeed, eSmoothingFunction::SMOOTHSTART3 );
-		
 		if( childWidget == childWidgets.back() )
 		{
 			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayerEndTurn );
@@ -189,10 +217,10 @@ bool Game::EnemyDealDamage( EventArgs const& args )
 	enemy.ResetBlock();
 
 	EnemyMove const& move = enemy.GetEnemyMove();
-	eStatus status = move.m_statusDef->m_statusType;
 
 	enemy.UpdateStatuses();
-
+	
+	eStatus status = move.m_statusDef->m_statusType;
 	if( status == Ritual )
 	{
 		enemy.AddStatus( status );
@@ -205,8 +233,10 @@ bool Game::EnemyDealDamage( EventArgs const& args )
 	int damage = move.m_damage;
 	damage = enemy.GetDamagePostStrength( damage );
 	int block = move.m_block;
+	int strength = move.m_strength;
 	player.TakeDamage( damage );
 	enemy.GainBlock( block );
+	enemy.AddStength( strength );
 
 	return true;
 }
@@ -256,7 +286,11 @@ bool Game::StartStartPlayerTurn( EventArgs const& args )
 		releaseArgs.SetValue( "cardType", (int)cardType );
 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
 
 		m_handWidget->AddChild( cardWidget );
 
@@ -304,7 +338,9 @@ bool Game::StartPlayCard( EventArgs const& args )
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
+	cardAttack = player.GetDamagePostStrength( cardAttack );
 	int cardBlock = cardDef.GetBlock();
+	bool isSpotWeakness = cardDef.GetIsSpotWeakness();
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
@@ -313,6 +349,19 @@ bool Game::StartPlayCard( EventArgs const& args )
 			enemy.TakeDamage( cardAttack );
 			player.GainBlock( cardBlock );
  			playerBoard.ConsumeEnergy( cardCost );
+
+			if( isSpotWeakness )
+			{
+				MoveTypeDefinition const* enemyIntent= enemy.m_currentIntent;
+				if( enemyIntent )
+				{
+					eMoveType enemyMoveType = enemyIntent->m_moveType;
+					if( enemyMoveType == Attack || enemyMoveType == AttackDefend )
+					{
+						player.AddStength( 3 );
+					}
+				}
+			}
 
 			Transform toDiscardPileTransform;
 			toDiscardPileTransform.m_position = Vec3( 6.f, 0.f, 0.f );
@@ -352,58 +401,99 @@ bool Game::FightOver( EventArgs const& args )
 	{
 		if( m_endFightWidget )
 		{
-			m_endFightWidget->SetText( "You Lose!" );
+			m_endFightWidget->SetText( "You Lose! Click to restart." );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
+			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
 		}
 		else
 		{
-			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 255 ) );
 
 			Transform endFightTransform;
 			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
 			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
 			m_endFightWidget->SetText( "You Lose! Click to restart." );
-			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetTextSize( 0.2f );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
 
-			m_endFightWidget->SetEventToFire( "restartFight" );
+			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
+			//m_endFightWidget->SetEventToFire( "restartFight" );
 		}
 		//You win!
 	}
 	else if( enemyHealth <= 0 )
 	{
-		//You lose!
 		if( m_endFightWidget )
 		{
 			m_endFightWidget->SetText( "You Win!" );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
+
+			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
 		else
 		{
-			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 128 ) );
+			Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 255 ) );
 			Transform endFightTransform;
 			endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
 			m_endFightWidget = new Widget( endFightTransform );
 			m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
-			m_endFightWidget->SetText( "You Win! Click to restart." );
-			m_endFightWidget->SetTextSize( 0.02f );
+			m_endFightWidget->SetTextSize( 0.2f );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanDrag( false );
 			m_endFightWidget->SetIsVisible( true );
 			g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
-			m_endFightWidget->SetEventToFire( "restartFight" );
+
+			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
 	}
 
 	return true;
+}
+
+bool Game::UpdateTargeting( EventArgs const& args )
+{
+	Vec2 startPos = args.GetValue( "currentPos", Vec2() );
+	Vec2 endPos = args.GetValue( "mousePos", Vec2() );
+	Vec2 startTangent = Vec2( 0.f, 1.f );
+
+	if( m_isTargeting )
+	{
+		UpdateTargetingWidgets( endPos );
+	}
+	else
+	{
+		DebuggerPrintf( "Creating TargetingWidgets\n" );
+		m_isTargeting = true;
+		CreateTargetingWidgets( startPos, endPos, startTangent, 10 );
+	}
+
+	return true;
+}
+
+bool Game::ReleaseTargeting( EventArgs const& args )
+{
+	UNUSED( args );
+	DebuggerPrintf( "Releasing TargetingWidgets\n" );
+	ClearTargetingWidgets();
+	m_isTargeting = false;
+
+	return false;
+}
+
+bool Game::AddCardToPlayerPermanentDeck( EventArgs const& args )
+{
+	int cardIndex = args.GetValue( "cardIndex", 0 );
+	m_currentGamestate->m_player.m_playerBoard.AddCardToPermanentDeck( (eCard)cardIndex );
+
+	return false;
 }
 
 void Game::InitializeDefinitions()
@@ -462,7 +552,11 @@ void Game::MatchUIToGameState()
 		releaseArgs.SetValue( "cardType", (int)cardType );
 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
 
 		m_handWidget->AddChild( cardWidget );
 	}
@@ -533,12 +627,13 @@ void Game::StartupUI()
 	deckWidget->SetTexture( deckTexture, m_cyanTexture, m_redTexture );
 	deckWidget->SetCanHover( true );
 	deckWidget->SetText( "Hello" );
-	deckWidget->SetTextSize( 0.1f );
+	deckWidget->SetTextSize( 0.3f );
 	rootWidget->AddChild( deckWidget );
 	m_deckWidget = deckWidget;
 
 	//Energy
 	m_energyWidget = new Widget( *deckWidget );
+	m_energyWidget->SetTextSize( 0.15f );
 	m_energyWidget->SetTexture( energyStoneTexture, m_cyanTexture, m_redTexture );
 	m_energyWidget->SetPosition( screenBounds.GetPointAtUV( Vec2( 0.05f, 0.3f ) ) );
 	m_energyWidget->SetCanHover( false );
@@ -558,7 +653,7 @@ void Game::StartupUI()
 	m_endTurnWidget->SetCanSelect( true );
 	m_endTurnWidget->SetEventToFire( "endTurn" );
 	m_endTurnWidget->SetText( "End Turn" );
-	m_endTurnWidget->SetTextSize( 0.1f );
+	m_endTurnWidget->SetTextSize( 0.15f );
 	m_endTurnWidget->SetTexture( buttonTexture, m_cyanTexture, m_redTexture );
 	rootWidget->AddChild( m_endTurnWidget );
 
@@ -902,4 +997,173 @@ void Game::DoEnemyTurn()
 	Enemy& enemy = m_currentGamestate->m_enemy;
 	enemy.UpdateEnemyMove( m_rand );
 	StartStartPlayerTurn( EventArgs() );
+}
+
+void Game::CreateTargetingWidgets( Vec2 const& startPos, Vec2 const& endPos, Vec2 const& startTangent, int countOfWidgets )
+{
+	Texture* headTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/PlaceholderArrow.png" );
+	Texture* bodyTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/PlaceholderArrowBody.png" );
+
+
+	m_startOfTargetChain = startPos;
+	m_endOfTargetChain = endPos;
+	m_startOfTargetChainTangent = startTangent;
+
+	float interval = 1.f / (float)countOfWidgets;
+
+	Widget* rootWidget = g_theUIManager->GetRootWidget();
+	Vec2 previousPosition = m_startOfTargetChain;
+	Vec2 currentTangent = m_startOfTargetChainTangent;
+
+	float currentAngle = currentTangent.GetAngleDegrees();
+	currentAngle -= 90.f;
+	for( size_t widgetIndex = 0; widgetIndex < countOfWidgets; widgetIndex++ )
+	{
+		float tValue = (float)widgetIndex * interval;
+
+		Vec2 position = QuadraticBezierCurveUsingStartTangent( m_startOfTargetChain, m_startOfTargetChainTangent, 1.f, m_endOfTargetChain, tValue );
+
+		Transform widgetTransform = Transform( position, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+		Widget* widget = new Widget( widgetTransform, nullptr );
+		widget->SetCanHover( false );
+		widget->SetTexture( bodyTexture, bodyTexture, bodyTexture );
+		m_targetBodyWidgets.push_back( widget );
+
+		rootWidget->AddChild( widget );
+
+		currentTangent = position - previousPosition;
+		currentTangent.Normalize();
+		currentAngle = currentTangent.GetAngleDegrees() - 90.f;
+		previousPosition = position;
+	}
+
+	Transform widgetTransform = Transform( m_endOfTargetChain, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+	Widget* widget = new Widget( widgetTransform, nullptr );
+	widget->SetCanHover( false );
+	widget->SetTexture( headTexture, headTexture, headTexture );
+	rootWidget->AddChild( widget );
+	m_targetHeadWidget = widget;
+}
+
+void Game::UpdateTargetingWidgets( Vec2 const& endPos )
+{
+	m_endOfTargetChain = endPos;
+	int countOfWidgets = (int)m_targetBodyWidgets.size();
+	//ClearTargetingWidgets();
+	//CreateTargetingWidgets( m_startOfTargetChain, m_endOfTargetChain, m_startOfTargetChainTangent, countOfWidgets );
+
+	float interval = 1.f / (float)countOfWidgets;
+	Vec2 previousPosition = m_startOfTargetChain;
+	Vec2 currentTangent = m_startOfTargetChainTangent;
+
+	float currentAngle = currentTangent.GetAngleDegrees();
+	currentAngle -= 90.f;
+	for( size_t widgetIndex = 0; widgetIndex < countOfWidgets; widgetIndex++ )
+	{
+		float tValue = (float)widgetIndex * interval;
+
+		Vec2 position = QuadraticBezierCurveUsingStartTangent( m_startOfTargetChain, m_startOfTargetChainTangent, 1.f, m_endOfTargetChain, tValue );
+
+		Transform widgetTransform = Transform( position, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+		Widget* widget = m_targetBodyWidgets[widgetIndex];
+		widget->SetTransform( widgetTransform );
+
+		currentTangent = position - previousPosition;
+		currentTangent.Normalize();
+		currentAngle = currentTangent.GetAngleDegrees() - 90.f;
+		previousPosition = position;
+	}
+
+	Transform headTransform = Transform( endPos, Vec3( 0.f, currentAngle, 0.f ), Vec3( 0.5f, 0.5f, 1.f ) );
+	m_targetHeadWidget->SetTransform( headTransform );
+}
+
+void Game::ClearTargetingWidgets()
+{
+	for( Widget* widget : m_targetBodyWidgets )
+	{
+		widget->MarkGarbage();
+	}
+	m_targetBodyWidgets.clear();
+
+	if( m_targetHeadWidget )
+	{
+		m_targetHeadWidget->MarkGarbage();
+		m_targetHeadWidget = nullptr;
+	}
+
+}
+
+void Game::GenerateAndDisplayEndFightAddCardsWidgets()
+{
+	Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 180, 180, 180, 255 ) );
+
+	Transform textTransform = Transform( Vec3(0.f, 3.f, 0.f ), Vec3(), Vec3( 4.f, 1.f, 1.f ) );
+	m_endFightTextWidget = new Widget( textTransform, nullptr );
+	m_endFightTextWidget->SetText( "Add a card" );
+	m_endFightTextWidget->SetTextSize( 0.3f );
+	m_endFightTextWidget->SetTexture( darkGreyTexture, nullptr, nullptr );
+	m_endFightTextWidget->SetCanHover( false );
+
+	Vec3 cardScale = Vec3( 3.f, 3.75f, 1.f );
+
+	Transform card1Transform = Transform( Vec3( -4.f, -1.f, 0.f ), Vec3(), cardScale );
+	Transform card2Transform = Transform( Vec3( 0.f, -1.f, 0.f ), Vec3(), cardScale );
+	Transform card3Transform = Transform( Vec3( 4.f, -1.f, 0.f ), Vec3(), cardScale );
+
+	m_endFightCard1Widget = new Widget( card1Transform, nullptr );
+	m_endFightCard2Widget = new Widget( card2Transform, nullptr );
+	m_endFightCard3Widget = new Widget( card3Transform, nullptr );
+
+
+	CardDefinition const& cardDef1 = CardDefinition::GetRandomCardDefinition();
+	CardDefinition const& cardDef2 = CardDefinition::GetRandomCardDefinition();
+	CardDefinition const& cardDef3 = CardDefinition::GetRandomCardDefinition();
+
+	m_endFightCard1Widget->SetTexture( cardDef1.GetCardTexture(), m_cyanTexture, m_redTexture );
+	m_endFightCard2Widget->SetTexture( cardDef2.GetCardTexture(), m_cyanTexture, m_redTexture );
+	m_endFightCard3Widget->SetTexture( cardDef3.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+	m_endFightCard1Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef1.GetCardType() );
+	m_endFightCard1Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard1Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+
+	m_endFightCard2Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef2.GetCardType() );
+	m_endFightCard2Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard2Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+	m_endFightCard3Widget->m_releaseArgs.SetValue( "cardIndex", (int)cardDef3.GetCardType() );
+	m_endFightCard3Widget->m_releaseDelegate.SubscribeMethod( this, &Game::AddCardToPlayerPermanentDeck );
+	m_endFightCard3Widget->m_releaseDelegate.SubscribeMethod( this, &Game::LoadNextFight );
+
+	//m_endFightWidget->SetEventToFire( "loadNextFight" );
+
+	m_endFightWidget->AddChild( m_endFightTextWidget );
+	m_endFightWidget->AddChild( m_endFightCard1Widget );
+	m_endFightWidget->AddChild( m_endFightCard2Widget );
+	m_endFightWidget->AddChild( m_endFightCard3Widget );
+}
+
+void Game::ClearEndFightWidgets()
+{
+	m_endFightWidget->SetIsVisible( false );
+	m_endFightWidget->SetCanHover( false );
+
+	if( m_endFightTextWidget )
+	{
+		m_endFightTextWidget->MarkGarbage();
+	}
+	if( m_endFightCard1Widget )
+	{
+		m_endFightCard1Widget->MarkGarbage();
+	}
+	if( m_endFightCard2Widget )
+	{
+		m_endFightCard2Widget->MarkGarbage();
+	}
+	if( m_endFightCard3Widget )
+	{
+		m_endFightCard3Widget->MarkGarbage();
+	}
 }

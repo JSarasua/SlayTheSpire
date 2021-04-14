@@ -6,6 +6,7 @@
 enum eEnemy
 {
 	Cultist,
+	JawWorm,
 	NUM_ENEMIES
 };
 

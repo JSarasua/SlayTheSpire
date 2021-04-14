@@ -7,6 +7,8 @@ enum eMoveType
 	Attack,
 	Buff,
 	Curse,
+	AttackDefend,
+	BuffDefend,
 	NUM_MOVETYPES
 };
 

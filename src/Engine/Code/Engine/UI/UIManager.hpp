@@ -17,6 +17,7 @@ public:
 	void Startup();
 	void Render();
 	void Update( float deltaSeconds );
+	void EndFrame();
 	Widget* GetRootWidget() { return m_rootWidget; }
 	GPUMesh* GetUIMesh() { return m_UIMesh; }
 	AABB2 GetScreenBounds() const { return m_screenBounds; }
