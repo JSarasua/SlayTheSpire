@@ -60,12 +60,14 @@ public:
 	void SetTextSize( float textSize ) { m_textSize = textSize; }
 	void ClearChildren();
 	void SetParent( Widget* parentWidget ) { m_parentWidget = parentWidget; }
+	void SetTextAlignment( Vec2 const& textAlignment ) { m_textAlignent = textAlignment; }
 
 	//Accessors
 	Transform GetTransform() const { return m_widgetTransform; }
 	Mat44 GetParentRelativeModelMatrixNoScale() const;
 	Mat44 GetParentInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrixScaleOnlySelf() const;
+	Mat44 GetRelativeModelMatrixNoScale() const;
 	Mat44 GetInverseModelMatrixNoScale() const;
 	Mat44 GetRelativeModelMatrix() const;
 	Mat44 GetInverseModelMatrix() const;
@@ -118,6 +120,7 @@ protected:
 	std::string m_eventToFire;
 	//properties
 	std::string m_text;
+	Vec2 m_textAlignent = Vec2( 0.5f, 0.5f );
 	float m_textSize = 1.f;
 	bool m_isVisible = false;
 	bool m_isHovered = false;
