@@ -65,10 +65,16 @@ void PlayerBoard::MoveDiscardPileToDeckAndShuffle()
 
 bool PlayerBoard::TryMoveCardFromHandToDiscardPile( eCard card )
 {
+	CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( card );
+
 	if( m_hand.Contains( card ) )
 	{
 		m_hand.RemoveCard( card );
-		m_discardPile.AddCard( card );
+		
+		if( !cardDef.m_isExhaust )
+		{
+			m_discardPile.AddCard( card );
+		}
 		return true;
 	}
 	else
@@ -103,7 +109,7 @@ void PlayerBoard::ShuffleDeck()
 	}
 }
 
-void PlayerBoard::DrawCard()
+eCard PlayerBoard::DrawCard()
 {
 	if( m_deck.size() == 0 )
 	{
@@ -114,6 +120,8 @@ void PlayerBoard::DrawCard()
 	eCard drawnCard = m_deck.back();
 	m_deck.pop_back();
 	m_hand.AddCard( drawnCard );
+
+	return drawnCard;
 }
 
 void PlayerBoard::DrawHand()

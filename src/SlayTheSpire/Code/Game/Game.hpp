@@ -13,6 +13,17 @@ class Widget;
 class WidgetSlider;
 class UIManager;
 class GameState;
+class EnemyDefinition;
+class RewardDefinition;
+
+
+struct Fight
+{
+	Fight( RandomNumberGenerator& rng );
+
+	EnemyDefinition const* enemyDef = nullptr;
+	RewardDefinition const* rewardDef = nullptr;
+};
 
 class Game
 {
@@ -37,8 +48,10 @@ public:
 	bool EndStartPlayerTurn( EventArgs const& args );
 	bool EndTurn( EventArgs const& args );
 	bool StartPlayCard( EventArgs const& args );
+	bool StartDrawCard( EventArgs const& args );
 	bool EndPlayCard( EventArgs const& args );
 	bool FightOver( EventArgs const& args );
+	bool ChooseNextFight( EventArgs const& args );
 	bool UpdateTargeting( EventArgs const& args );
 	bool ReleaseTargeting( EventArgs const& args );
 	bool AddCardToPlayerPermanentDeck( EventArgs const& args );
@@ -64,7 +77,9 @@ private:
 	void UpdateTargetingWidgets( Vec2 const& endPos );
 	void ClearTargetingWidgets();
 	void GenerateAndDisplayEndFightAddCardsWidgets();
+	void GenerateAndDisplayChooseFightWidgets();
 	void ClearEndFightWidgets();
+	void ClearChooseFightWidgets();
 
 
 private:
@@ -91,6 +106,12 @@ private:
 	Widget* m_endFightCard1Widget = nullptr;
 	Widget* m_endFightCard2Widget = nullptr;
 	Widget* m_endFightCard3Widget = nullptr;
+
+	Widget* m_chooseFightWidget = nullptr;
+	Widget* m_chooseFightTextWidget = nullptr;
+	Widget* m_chooseFightOption1Widget = nullptr;
+	Widget* m_chooseFightOption2Widget = nullptr;
+	Widget* m_chooseFightOption3Widget = nullptr;
 
 	bool m_isUIDirty = false;
 

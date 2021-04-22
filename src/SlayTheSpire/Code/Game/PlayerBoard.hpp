@@ -23,7 +23,7 @@ public:
 	bool TryMoveCardFromHandToDiscardPile( eCard card );
 	void DiscardHand();
 	void ShuffleDeck();
-	void DrawCard();
+	eCard DrawCard();
 	void DrawHand(); //5 cards
 
 	bool CanConsumeEnergy( int energyToConsume ) const { return energyToConsume <= m_playerEnergy; }
