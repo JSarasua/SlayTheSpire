@@ -31,6 +31,7 @@ Entity::Entity( Widget* parentWidget,
 	healthTransform.m_position.y -= 1.f;
 	m_healthWidget = new WidgetSlider( healthTransform );
 	m_healthWidget->SetBackgroundAndFillTextures( redTexture, greenTexture);
+	m_healthWidget->SetTextSize( 0.1f );
 	parentWidget->AddChild( m_healthWidget );
 
 
@@ -70,6 +71,7 @@ Entity::Entity()
 	healthTransform.m_position = m_entityWidget->GetLocalAABB2().GetPointAtUV( Vec2( 0.5f, -0.05f ) );
 	healthTransform.m_scale = Vec3( 2.f, 0.2f, 1.f );
 	m_healthWidget = new WidgetSlider( healthTransform );
+	m_healthWidget->SetTextSize( 0.1f );
 	m_healthWidget->SetBackgroundAndFillTextures( redTexture, greenTexture );
 	
 	m_entityWidget->AddChild( m_healthWidget );
@@ -138,8 +140,8 @@ void Entity::SetParentWidget( Widget* parentWidget )
 void Entity::Update( float deltaSeconds )
 {
 	UNUSED( deltaSeconds );
-	float healthRatio = (float)m_health/(float)m_maxHealth;
-	m_healthWidget->SetSliderValue( healthRatio );
+	//float healthRatio = (float)m_health/(float)m_maxHealth;
+	m_healthWidget->SetSliderValue( (float)m_health, (float)m_maxHealth );
 
 	m_blockWidget->SetText( Stringf( "%i", m_block ) );
 }
@@ -187,7 +189,7 @@ void Entity::AddStatus( eStatus status )
 	m_statusEffectsWidget->AddChild( statusWidget );
 }
 
-void Entity::AddStength( int strength )
+void Entity::AddStrength( int strength )
 {
 	m_strength += strength;
 
@@ -224,9 +226,15 @@ void Entity::UpdateStatuses()
 
 		if( status == Ritual )
 		{
-			AddStength( statusDef.m_strengthPerTurn );
+			AddStrength( statusDef.m_strengthPerTurn );
 		}
 	}
+}
+
+void Entity::AddMaxHealth( int health )
+{
+	m_health += health;
+	m_maxHealth += health;
 }
 
 void Entity::Reset()

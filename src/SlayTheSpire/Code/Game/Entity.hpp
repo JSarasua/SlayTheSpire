@@ -28,9 +28,11 @@ public:
 	void ResetBlock() { m_block = 0; }
 	int GetDamagePostStrength ( int damage ) const;
 	void AddStatus( eStatus status );
-	void AddStength( int strength );
+	void AddStrength( int strength );
 	void UpdateStatuses();
+	int GetStrength() const { return m_strength; }
 	int GetHealth() const { return m_health; }
+	void AddMaxHealth( int health );
 	virtual void Reset();
 
 protected:
