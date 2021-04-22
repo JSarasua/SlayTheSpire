@@ -15,6 +15,7 @@ public:
 	~Enemy();
 
 	void UpdateEnemyMove( RandomNumberGenerator& rng );
+	void UpdateIntentWidget();
 	EnemyMove const& GetEnemyMove() const { return m_currentEnemyMove; }
 
 	virtual void Reset() override;
