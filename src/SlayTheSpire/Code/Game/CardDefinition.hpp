@@ -18,6 +18,14 @@ enum eCard
 // 	Anger,
  	IronWave,
  	LimitBreak,
+	HeavyBlade,
+	Hemokinesis,
+	PommelStrike,
+	SeeingRed,
+	PerfectedStrike,
+	WildStrike,
+	Bloodletting,
+	Wound,
 	NUM_CARDS
 };
 
@@ -58,5 +66,9 @@ public:
 	int m_enemyStrengthModifier = 0;
 	int m_strengthPerTurn = 0;
 	bool m_isLimitBreak = false;
-
+	int m_healthIncrease = 0;
+	bool m_isPerfectedStrike = false;
+	int m_woundsToAdd = 0;
+	int m_strengthMultiplier = 1;
+	int m_energyGain = 0;
 };

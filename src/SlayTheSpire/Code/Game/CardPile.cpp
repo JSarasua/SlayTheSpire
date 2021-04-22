@@ -72,3 +72,8 @@ int CardPile::GetTotalSize() const
 	return totalSize;
 }
 
+int CardPile::GetCount( eCard card ) const
+{
+	return m_cards[card];
+}
+

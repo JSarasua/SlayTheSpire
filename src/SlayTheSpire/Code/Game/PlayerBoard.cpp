@@ -25,9 +25,14 @@ void PlayerBoard::AddCardToPermanentDeck( eCard card )
 	m_permanentDeck.AddCard( card );
 }
 
-void PlayerBoard::AddCardToDeckAndShuffle( eCard card )
+void PlayerBoard::AddCardToDeckAndShuffle( eCard card, int cardCount )
 {
-	m_deck.push_back( card );
+	int cardIndex = 0;
+	while( cardIndex < cardCount )
+	{
+		m_deck.push_back( card );
+		cardIndex++;
+	}
 	ShuffleDeck();
 }
 
@@ -152,6 +157,17 @@ int PlayerBoard::GetHandSize() const
 int PlayerBoard::GetDiscardPileSize() const
 {
 	return m_discardPile.GetTotalSize();
+}
+
+int PlayerBoard::GetStrikeCardCount() const
+{
+	int strikeCardCount = 0;
+	strikeCardCount += m_permanentDeck.GetCount( PerfectedStrike );
+	strikeCardCount += m_permanentDeck.GetCount( WildStrike );
+	strikeCardCount += m_permanentDeck.GetCount( Strike );
+	strikeCardCount += m_permanentDeck.GetCount( PommelStrike );
+
+	return strikeCardCount;
 }
 
 std::vector<eCard> PlayerBoard::GetHandAsVector() const

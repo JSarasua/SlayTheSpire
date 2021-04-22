@@ -339,9 +339,20 @@ bool Game::StartPlayCard( EventArgs const& args )
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
-	cardAttack = player.GetDamagePostStrength( cardAttack );
+	int strengthMultiplier = cardDef.m_strengthMultiplier;
+	cardAttack = player.GetDamagePostStrength( cardAttack, strengthMultiplier );
 	int cardBlock = cardDef.GetBlock();
 	bool isSpotWeakness = cardDef.GetIsSpotWeakness();
+	int healthToGain = cardDef.m_healthIncrease;
+	int energyToGain = cardDef.m_energyGain;
+	int woundsToGain = cardDef.m_woundsToAdd;
+
+	if( cardDef.m_isPerfectedStrike )
+	{
+		int strikeCardCount = playerBoard.GetStrikeCardCount();
+		int damageIncrease = 2 * strikeCardCount;
+		cardAttack += damageIncrease;
+	}
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
@@ -350,6 +361,13 @@ bool Game::StartPlayCard( EventArgs const& args )
 			enemy.TakeDamage( cardAttack );
 			player.GainBlock( cardBlock );
  			playerBoard.ConsumeEnergy( cardCost );
+			player.GainHealth( healthToGain );
+			playerBoard.GainEnergy( energyToGain );
+			
+			if( woundsToGain > 0 )
+			{
+				playerBoard.AddCardToDeckAndShuffle( Wound, woundsToGain );
+			}
 
 			if( isSpotWeakness )
 			{

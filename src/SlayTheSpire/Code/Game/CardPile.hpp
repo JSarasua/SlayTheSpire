@@ -16,6 +16,7 @@ public:
 	bool Contains( eCard card ) const;
 	std::vector<eCard> ToVector() const;
 	int GetTotalSize() const;
+	int GetCount( eCard card ) const;
 private:
 	std::array<int, eCard::NUM_CARDS> m_cards;
 };

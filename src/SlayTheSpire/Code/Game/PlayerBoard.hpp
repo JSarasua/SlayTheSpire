@@ -15,7 +15,7 @@ public:
 	void InitializePlayerBoard();
 
 	void AddCardToPermanentDeck( eCard card );
-	void AddCardToDeckAndShuffle( eCard card );
+	void AddCardToDeckAndShuffle( eCard card, int cardCount = 1 );
 	void AddCardToDiscardPile( eCard card );
 	void RemoveCardFromDeck( eCard card );
 	void RemoveCardFromDiscardPile( eCard card );
@@ -29,12 +29,14 @@ public:
 	bool CanConsumeEnergy( int energyToConsume ) const { return energyToConsume <= m_playerEnergy; }
 	void ConsumeEnergy( int energyToConsume );
 	void ResetEnergy() { m_playerEnergy = m_playerMaxEnergy; }
+	void GainEnergy( int energyToGain ) { m_playerEnergy += energyToGain; }
 
 	int GetDeckSize() const;
 	int GetHandSize() const;
 	int GetDiscardPileSize() const;
 	int GetEnergy() const { return m_playerEnergy; }
 	int GetMaxEnergy() const { return m_playerMaxEnergy; }
+	int GetStrikeCardCount() const;
 	std::vector<eCard> GetHandAsVector() const;
 
 	void Reset();
