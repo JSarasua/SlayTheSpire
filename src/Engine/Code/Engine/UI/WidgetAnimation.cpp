@@ -9,6 +9,20 @@ WidgetAnimation::WidgetAnimation( Widget* widgetToAnimate, Transform const& fina
 	m_smoothingFunction( smoothingFunction )
 {
 	m_startingTransform = m_widgetToAnimate->m_widgetTransform;
+	m_startingTint = m_widgetToAnimate->m_tint;
+	m_finalTint = m_widgetToAnimate->m_tint;
+}
+
+WidgetAnimation::WidgetAnimation( Widget* widgetToAnimate, Rgba8 const& finalTint, float animationTime, eSmoothingFunction smoothingFunction ):
+	m_widgetToAnimate( widgetToAnimate ),
+	m_finalTint( finalTint ),
+	m_currentTime( 0.f ),
+	m_animationTime( animationTime ),
+	m_smoothingFunction( smoothingFunction )
+{
+	m_startingTransform = m_widgetToAnimate->m_widgetTransform;
+	m_finalTransform = m_widgetToAnimate->m_widgetTransform;
+	m_startingTint = m_widgetToAnimate->m_tint;
 }
 
 WidgetAnimation::~WidgetAnimation()
@@ -27,11 +41,13 @@ void WidgetAnimation::Update( float deltaSeconds )
 	if( m_currentTime >= m_animationTime )
 	{
 		m_widgetToAnimate->m_widgetTransform = m_finalTransform;
+		m_widgetToAnimate->m_tint = m_finalTint;
 		m_endAnimationDelegate.Invoke( EventArgs() );
 		return;
 	}
 
 	UpdateWidgetTransform();
+	UpdateWidgetTint();
 }
 
 void WidgetAnimation::UpdateWidgetTransform()
@@ -44,6 +60,15 @@ void WidgetAnimation::UpdateWidgetTransform()
 	widgetTransform.m_position = newPosition;
 	widgetTransform.m_rotationPitchRollYawDegrees = newOrientation;
 	widgetTransform.m_scale = newScale;
+}
+
+void WidgetAnimation::UpdateWidgetTint()
+{
+	float lerpValue = SmoothFunctionLerpUsingCurrentTime( 0.f, 1.f );
+	Rgba8 currentTint = Rgba8::LerpColorAsHSL( m_startingTint, m_finalTint, lerpValue );
+	
+	Rgba8& widgetTint = m_widgetToAnimate->m_tint;
+	widgetTint = currentTint;
 }
 
 Vec3 WidgetAnimation::UpdateVec3( Vec3 const& startVec3, Vec3 const& endVec3 )

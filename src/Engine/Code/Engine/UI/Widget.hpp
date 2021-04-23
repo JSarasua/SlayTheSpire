@@ -64,6 +64,7 @@ public:
 	void ClearChildren();
 	void SetParent( Widget* parentWidget ) { m_parentWidget = parentWidget; }
 	void SetTextAlignment( Vec2 const& textAlignment ) { m_textAlignent = textAlignment; }
+	void SetTint( Rgba8 const& widgetTint ) { m_tint = widgetTint; }
 
 	//Accessors
 	Transform GetTransform() const { return m_widgetTransform; }
@@ -115,6 +116,7 @@ protected:
 
 	//Assume 1x1 Square
 	Transform m_widgetTransform;
+	Rgba8 m_tint = Rgba8::WHITE;
 	GPUMesh* m_mesh = nullptr;
 	Texture const* m_texture = nullptr;
 	Texture const* m_highlightTexture = nullptr;

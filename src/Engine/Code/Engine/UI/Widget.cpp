@@ -191,6 +191,7 @@ void Widget::Render()
 			Mat44 modelMatrix = GetRelativeModelMatrixScaleOnlySelf();
 
 			context->SetModelMatrix( modelMatrix );
+			context->SetModelTint( m_tint );
 			context->BindShader( (Shader*)nullptr );
 
 			if( m_isSelected )
@@ -216,15 +217,10 @@ void Widget::Render()
 				Mat44 textModelMatrix = GetRelativeModelMatrixNoScale();
 				context->SetModelMatrix( textModelMatrix );
 				AABB2 textBox = GetLocalAABB2();
-				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, m_textAlignent );
+				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, m_textAlignent, m_tint );
 
 			}
-// 			if( m_text.size() > 0 )
-// 			{
-// 				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
-// 				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
-// 
-// 			}
+			context->SetModelTint( Rgba8::WHITE );
 		}
 	}
 
