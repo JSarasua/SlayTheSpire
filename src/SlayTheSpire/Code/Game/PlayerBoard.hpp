@@ -40,11 +40,13 @@ public:
 	std::vector<eCard> GetHandAsVector() const;
 
 	void Reset();
+	void FullReset();
 public:
 	std::vector<eCard> m_deck; 
 	CardPile m_hand;
 	CardPile m_discardPile;
 	CardPile m_permanentDeck;
+	CardPile m_startingDeck;
 	
 	int m_playerEnergy = 0;
 	int m_playerMaxEnergy = 3;

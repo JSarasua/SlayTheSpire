@@ -122,16 +122,13 @@ bool Game::RestartGame( EventArgs const& args )
 	UNUSED( args );
 
 	ClearEndFightWidgets();
-// 	m_endFightWidget->SetIsVisible( false );
-// 	m_endFightWidget->SetCanHover( false );
 
-	m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_player.FullReset();
 	m_currentGamestate->m_enemy.Reset();
+	m_currentGamestate->m_roundsWon = 0;
 
 	m_isUIDirty = true;
 
-
-	//m_endFightWidget->m_releaseDelegate.UnsubscribeObject( this );
 	return true;
 }
 
@@ -139,22 +136,22 @@ bool Game::LoadNextFight( EventArgs const& args )
 {
 	UNUSED( args );
 
-	ClearEndFightWidgets();
-// 	m_endFightWidget->SetIsVisible( false );
-// 	m_endFightWidget->SetCanHover( false );
-// 
-// 	m_endFightTextWidget->MarkGarbage();
-// 	m_endFightCard1Widget->MarkGarbage();
-// 	m_endFightCard2Widget->MarkGarbage();
-// 	m_endFightCard3Widget->MarkGarbage();
+	TransitionOutEndFightWidgets();
+	//ClearEndFightWidgets();
 
-	//m_currentGamestate->m_player.Reset();
 	m_currentGamestate->m_player.ResetNoHealth();
 	EnemyDefinition const& nextEnemyDef = EnemyDefinition::GetEnemyDefinitionByType( JawWorm );
 	m_currentGamestate->m_enemy.SetEnemyDef( &nextEnemyDef );
 	m_currentGamestate->m_enemy.Reset();
 
 	m_isUIDirty = true;
+
+	return true;
+}
+
+bool Game::EndLoadNextFight( EventArgs const& args )
+{
+	ClearEndFightWidgets();
 
 	return true;
 }
@@ -544,7 +541,7 @@ bool Game::FightOver( EventArgs const& args )
 	{
 		if( m_endFightWidget )
 		{
-			m_endFightWidget->SetText( "You Lose! Click to restart." );
+			m_endFightWidget->SetText( Stringf("You survived %i rounds", m_currentGamestate->m_roundsWon).c_str() );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
@@ -568,6 +565,9 @@ bool Game::FightOver( EventArgs const& args )
 			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
 			//m_endFightWidget->SetEventToFire( "restartFight" );
 		}
+		m_endFightWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+		WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+		m_endFightWidget->StartAnimation( endFightAnimation );
 		//You win!
 	}
 	else if( enemyHealth <= 0 )
@@ -596,6 +596,12 @@ bool Game::FightOver( EventArgs const& args )
 
 			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
+
+		m_endFightWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+		WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+		m_endFightWidget->StartAnimation( endFightAnimation );
+
+		m_currentGamestate->m_roundsWon++;
 	}
 
 	return true;
@@ -1309,6 +1315,20 @@ void Game::GenerateAndDisplayEndFightAddCardsWidgets()
 	m_endFightWidget->AddChild( m_endFightCard1Widget );
 	m_endFightWidget->AddChild( m_endFightCard2Widget );
 	m_endFightWidget->AddChild( m_endFightCard3Widget );
+
+
+	m_endFightTextWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard1Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard2Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard3Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	WidgetAnimation endFightTextAnimation = WidgetAnimation( m_endFightTextWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight1Animation = WidgetAnimation( m_endFightCard1Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight2Animation = WidgetAnimation( m_endFightCard2Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight3Animation = WidgetAnimation( m_endFightCard3Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	m_endFightTextWidget->StartAnimation( endFightTextAnimation );
+	m_endFightCard1Widget->StartAnimation( endFight1Animation );
+	m_endFightCard2Widget->StartAnimation( endFight2Animation );
+	m_endFightCard3Widget->StartAnimation( endFight3Animation );
 }
 
 void Game::GenerateAndDisplayChooseFightWidgets()
@@ -1356,6 +1376,23 @@ void Game::ClearEndFightWidgets()
 	{
 		m_endFightCard3Widget->MarkGarbage();
 	}
+}
+
+void Game::TransitionOutEndFightWidgets()
+{
+	Rgba8 endTint = Rgba8( 255, 255, 255, 0 );
+	WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFightTextAnimation = WidgetAnimation( m_endFightTextWidget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight1Animation = WidgetAnimation( m_endFightCard1Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight2Animation = WidgetAnimation( m_endFightCard2Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight3Animation = WidgetAnimation( m_endFightCard3Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	Delegate<EventArgs const&>& endFightDelegate = m_endFightWidget->StartAnimation( endFightAnimation );
+	m_endFightTextWidget->StartAnimation( endFightTextAnimation );
+	m_endFightCard1Widget->StartAnimation( endFight1Animation );
+	m_endFightCard2Widget->StartAnimation( endFight2Animation );
+	m_endFightCard3Widget->StartAnimation( endFight3Animation );
+
+	endFightDelegate.SubscribeMethod( this, &Game::EndLoadNextFight );
 }
 
 Fight::Fight( RandomNumberGenerator& rng )

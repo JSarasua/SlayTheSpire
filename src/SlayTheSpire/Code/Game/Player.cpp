@@ -32,6 +32,12 @@ void Player::Reset()
 	m_playerBoard.Reset();
 }
 
+void Player::FullReset()
+{
+	Entity::Reset();
+	m_playerBoard.FullReset();
+}
+
 void Player::ResetNoHealth()
 {
 	m_strength = 0;

@@ -39,6 +39,7 @@ public:
 
 	bool RestartGame( EventArgs const& args );
 	bool LoadNextFight( EventArgs const& args );
+	bool EndLoadNextFight( EventArgs const& args );
 	bool StartPlayerEndTurn( EventArgs const& args );
 	bool EndPlayerEndTurn( EventArgs const& args );
 	bool StartEnemyTurn( EventArgs const& args );
@@ -79,6 +80,7 @@ private:
 	void GenerateAndDisplayEndFightAddCardsWidgets();
 	void GenerateAndDisplayChooseFightWidgets();
 	void ClearEndFightWidgets();
+	void TransitionOutEndFightWidgets();
 	void ClearChooseFightWidgets();
 
 

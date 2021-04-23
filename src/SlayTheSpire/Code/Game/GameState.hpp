@@ -12,6 +12,7 @@ public:
 	~GameState() {}
 
 	void Update( float deltaSeconds );
+	void RoundWon() { m_roundsWon++; }
 
 public:
 	int m_whoseTurn = 0;
@@ -19,4 +20,5 @@ public:
 	Enemy m_enemy;
 
 	bool m_isGameOver = false;
+	int m_roundsWon = 0;
 };

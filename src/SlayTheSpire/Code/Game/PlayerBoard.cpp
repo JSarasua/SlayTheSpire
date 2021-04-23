@@ -9,9 +9,14 @@ void PlayerBoard::InitializePlayerBoard()
 	m_deck.clear();
 	m_hand.ClearPile();
 	m_discardPile.ClearPile();
-	m_permanentDeck.AddCard( Strike, 7 );
-	m_permanentDeck.AddCard( Defend, 3 );
-	m_deck = m_permanentDeck.ToVector();
+
+	m_startingDeck.AddCard( Strike, 5 );
+	m_startingDeck.AddCard( Defend, 5 );
+	m_permanentDeck = m_startingDeck;
+	m_deck = m_startingDeck.ToVector();
+// 	m_permanentDeck.AddCard( Strike, 7 );
+// 	m_permanentDeck.AddCard( Defend, 3 );
+// 	m_deck = m_permanentDeck.ToVector();
 
 	ShuffleDeck();
 
@@ -189,5 +194,11 @@ void PlayerBoard::Reset()
 	m_playerEnergy = m_playerMaxEnergy;
 	m_playerHealth = m_playerMaxHealth;
 	m_playerBlock = 0;
+}
+
+void PlayerBoard::FullReset()
+{
+	m_permanentDeck = m_startingDeck;
+	Reset();
 }
 
