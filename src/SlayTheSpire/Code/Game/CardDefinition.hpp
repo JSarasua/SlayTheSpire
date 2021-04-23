@@ -10,13 +10,31 @@ enum eCard
 	//DefendPlus,
 	SpotWeakness,
 	//SpotWeaknessPlus,
+	ShrugItOff,
+	Bludgeon,
+	Impervious,
+ 	Feed,
+ 	Disarm,
+// 	Anger,
+ 	IronWave,
+ 	LimitBreak,
+	HeavyBlade,
+	Hemokinesis,
+	PommelStrike,
+	SeeingRed,
+	PerfectedStrike,
+	WildStrike,
+	Bloodletting,
+	Wound,
 	NUM_CARDS
 };
 
 class CardDefinition
 {
 private:
-	CardDefinition( eCard cardType, int costToPlay, int attack, int block, Texture const* texture );
+	CardDefinition( eCard cardType, int costToPlay, int attack, int block, Texture const* texture, 
+		bool isSpotWeakness = false, bool isExhaust = false, int cardDraw = 0, int maxHealthIncrease = 0, 
+		int enemyStrengthModifier = 0, int strengthPerTurn = 0, bool isLimitBreak = false );
 public:
 	CardDefinition() = default;
 	~CardDefinition() {}
@@ -39,7 +57,18 @@ private:
 	int m_attack = 0;
 	int m_block = 0;
 
-	bool m_isSpotWeakness = false;
-
 	Texture const* m_texture = nullptr;
+public:
+	bool m_isSpotWeakness = false;
+	bool m_isExhaust = false;
+	int m_cardDraw = 0;
+	int m_maxHealthIncrease = 0;
+	int m_enemyStrengthModifier = 0;
+	int m_strengthPerTurn = 0;
+	bool m_isLimitBreak = false;
+	int m_healthIncrease = 0;
+	bool m_isPerfectedStrike = false;
+	int m_woundsToAdd = 0;
+	int m_strengthMultiplier = 1;
+	int m_energyGain = 0;
 };

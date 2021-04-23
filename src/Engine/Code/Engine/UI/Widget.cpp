@@ -14,6 +14,11 @@ Widget::Widget( Transform const& transform, Widget* parentWidget) :
 	m_isVisible( true )
 {
 	m_mesh = g_theUIManager->GetUIMesh();
+
+	if( m_parentWidget )
+	{
+		m_parentWidget->AddChild( this );
+	}
 }
 
 Widget::Widget( AABB2 screenBounds )
@@ -27,6 +32,28 @@ Widget::Widget( AABB2 screenBounds )
 	m_widgetTransform.m_scale.z = 1.f;
 
 	m_isVisible = false;
+}
+
+Widget::Widget( AABB2 localBounds, Widget* parentWidget )
+{
+	m_mesh = g_theUIManager->GetUIMesh();
+	m_widgetTransform.m_position = localBounds.GetCenter();
+	m_widgetTransform.m_scale = Vec3( localBounds.GetDimensions(), 1.f );
+
+	parentWidget->AddChild( this );
+}
+
+Widget::Widget( Vec2 const& parentUVs, Vec2 const& parentPercentDimension, Widget* parentWidget, Vec2 const& offset /*= Vec2()*/, Vec2 const& pivot /*= Vec2( 0.5f, 0.5f ) */ )
+{
+	AABB2 parentAABB2 = parentWidget->GetLocalAABB2();
+	AABB2 newBox = parentAABB2.GetInnerBoxWithAlignment( parentUVs, offset, pivot, parentPercentDimension );
+
+	m_widgetTransform.m_position = newBox.GetCenter();
+	m_widgetTransform.m_scale = newBox.GetDimensions();
+
+	m_mesh = g_theUIManager->GetUIMesh();
+
+	parentWidget->AddChild( this );
 }
 
 Widget::~Widget()
@@ -164,6 +191,7 @@ void Widget::Render()
 			Mat44 modelMatrix = GetRelativeModelMatrixScaleOnlySelf();
 
 			context->SetModelMatrix( modelMatrix );
+			context->SetModelTint( m_tint );
 			context->BindShader( (Shader*)nullptr );
 
 			if( m_isSelected )
@@ -189,15 +217,10 @@ void Widget::Render()
 				Mat44 textModelMatrix = GetRelativeModelMatrixNoScale();
 				context->SetModelMatrix( textModelMatrix );
 				AABB2 textBox = GetLocalAABB2();
-				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, m_textAlignent );
+				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, m_textAlignent, m_tint );
 
 			}
-// 			if( m_text.size() > 0 )
-// 			{
-// 				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
-// 				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
-// 
-// 			}
+			context->SetModelTint( Rgba8::WHITE );
 		}
 	}
 

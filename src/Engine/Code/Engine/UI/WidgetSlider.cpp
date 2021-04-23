@@ -33,11 +33,20 @@ void WidgetSlider::Render()
 				context->DrawMesh( m_mesh );
 			}
 
-			context->SetModelMatrix( modelMatrix );
+			Mat44 textModelMatrix = GetRelativeModelMatrixNoScale();
+			context->SetModelMatrix( textModelMatrix );
+			AABB2 textBox = GetLocalAABB2();
+			//context->SetModelMatrix( modelMatrix );
 			if( m_text.size() > 0 )
 			{
-				AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
+				//AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
 				context->DrawAlignedTextAtPosition( m_text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
+			}
+			else if( m_topValue != 0.f )
+			{
+				std::string text = Stringf( "%.f/%.f", m_topValue, m_bottomValue );
+				//AABB2 textBox = AABB2( -0.5f, -0.5f, 0.5f, 0.5f );
+				context->DrawAlignedTextAtPosition( text.c_str(), textBox, m_textSize, Vec2( 0.5f, 0.5f ) );
 			}
 
 			context->SetModelTint( Rgba8::WHITE );
@@ -58,6 +67,13 @@ void WidgetSlider::SetSliderValue( float sliderValueZeroToOne )
 {
 	m_sliderValue = sliderValueZeroToOne;
 	m_sliderValue = Clampf( m_sliderValue, 0.f, 1.f );
+}
+
+void WidgetSlider::SetSliderValue( float numerator, float denominator )
+{
+	m_topValue = numerator;
+	m_bottomValue = denominator;
+	m_sliderValue = m_topValue/m_bottomValue;
 }
 
 void WidgetSlider::SetBackgroundAndFillTextures( Texture const* backgroundTexture, Texture const* fillTexture )

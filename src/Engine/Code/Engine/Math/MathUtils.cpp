@@ -982,8 +982,6 @@ float QuadraticBezierCurve1D( float a, float b, float c, float t )
 
 Vec2 QuadraticBezierCurve( Vec2 const& aPos, Vec2 const& bPos, Vec2 const& cPos, float t )
 {
-	float s = 1.f - t;
-
 	float newX = QuadraticBezierCurve1D( aPos.x, bPos.x, cPos.x, t );
 	float newY = QuadraticBezierCurve1D( aPos.y, bPos.y, cPos.y, t );
 

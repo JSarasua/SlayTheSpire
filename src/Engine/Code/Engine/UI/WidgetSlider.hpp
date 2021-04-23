@@ -9,12 +9,15 @@ public:
 	virtual void Render() override;
 
 	void SetSliderValue( float sliderValueZeroToOne );
+	void SetSliderValue( float numerator, float denominator );
 	void SetBackgroundAndFillTextures( Texture const* backgroundTexture, Texture const* fillTexture );
 	Mat44 GetFillModelMatrix();
 	Mat44 GetFillRelativeModelMatrixScaleOnlySelf();
 
 private:
 	float m_sliderValue = 0.f;
+	float m_topValue = 0.f;
+	float m_bottomValue = 0.f;
 	Rgba8 m_backgroundColor = Rgba8::RED;
 	Rgba8 m_fillColor = Rgba8::GREEN;
 

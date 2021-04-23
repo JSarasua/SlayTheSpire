@@ -14,6 +14,7 @@ public:
 	PlayerBoard& GetPlayerBoard() { return m_playerBoard; }
 	
 	virtual void Reset() override;
+	void FullReset();
 	void ResetNoHealth();
 public:
 	PlayerBoard m_playerBoard;

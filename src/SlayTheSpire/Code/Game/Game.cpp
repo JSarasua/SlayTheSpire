@@ -9,6 +9,7 @@
 #include "Game/CardDefinition.hpp"
 #include "Game/StatusDefinition.hpp"
 #include "Game/EnemyDefinition.hpp"
+#include "Game/RewardDefinition.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/DebugRender.hpp"
 #include "Engine/Time/Clock.hpp"
@@ -121,16 +122,13 @@ bool Game::RestartGame( EventArgs const& args )
 	UNUSED( args );
 
 	ClearEndFightWidgets();
-// 	m_endFightWidget->SetIsVisible( false );
-// 	m_endFightWidget->SetCanHover( false );
 
-	m_currentGamestate->m_player.Reset();
+	m_currentGamestate->m_player.FullReset();
 	m_currentGamestate->m_enemy.Reset();
+	m_currentGamestate->m_roundsWon = 0;
 
 	m_isUIDirty = true;
 
-
-	//m_endFightWidget->m_releaseDelegate.UnsubscribeObject( this );
 	return true;
 }
 
@@ -138,22 +136,22 @@ bool Game::LoadNextFight( EventArgs const& args )
 {
 	UNUSED( args );
 
-	ClearEndFightWidgets();
-// 	m_endFightWidget->SetIsVisible( false );
-// 	m_endFightWidget->SetCanHover( false );
-// 
-// 	m_endFightTextWidget->MarkGarbage();
-// 	m_endFightCard1Widget->MarkGarbage();
-// 	m_endFightCard2Widget->MarkGarbage();
-// 	m_endFightCard3Widget->MarkGarbage();
+	TransitionOutEndFightWidgets();
+	//ClearEndFightWidgets();
 
-	//m_currentGamestate->m_player.Reset();
 	m_currentGamestate->m_player.ResetNoHealth();
 	EnemyDefinition const& nextEnemyDef = EnemyDefinition::GetEnemyDefinitionByType( JawWorm );
 	m_currentGamestate->m_enemy.SetEnemyDef( &nextEnemyDef );
 	m_currentGamestate->m_enemy.Reset();
 
 	m_isUIDirty = true;
+
+	return true;
+}
+
+bool Game::EndLoadNextFight( EventArgs const& args )
+{
+	ClearEndFightWidgets();
 
 	return true;
 }
@@ -236,7 +234,7 @@ bool Game::EnemyDealDamage( EventArgs const& args )
 	int strength = move.m_strength;
 	player.TakeDamage( damage );
 	enemy.GainBlock( block );
-	enemy.AddStength( strength );
+	enemy.AddStrength( strength );
 
 	return true;
 }
@@ -338,9 +336,20 @@ bool Game::StartPlayCard( EventArgs const& args )
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
-	cardAttack = player.GetDamagePostStrength( cardAttack );
+	int strengthMultiplier = cardDef.m_strengthMultiplier;
+	cardAttack = player.GetDamagePostStrength( cardAttack, strengthMultiplier );
 	int cardBlock = cardDef.GetBlock();
 	bool isSpotWeakness = cardDef.GetIsSpotWeakness();
+	int healthToGain = cardDef.m_healthIncrease;
+	int energyToGain = cardDef.m_energyGain;
+	int woundsToGain = cardDef.m_woundsToAdd;
+
+	if( cardDef.m_isPerfectedStrike )
+	{
+		int strikeCardCount = playerBoard.GetStrikeCardCount();
+		int damageIncrease = 2 * strikeCardCount;
+		cardAttack += damageIncrease;
+	}
 
 	if( playerBoard.CanConsumeEnergy( cardCost ) )
 	{
@@ -349,6 +358,13 @@ bool Game::StartPlayCard( EventArgs const& args )
 			enemy.TakeDamage( cardAttack );
 			player.GainBlock( cardBlock );
  			playerBoard.ConsumeEnergy( cardCost );
+			player.GainHealth( healthToGain );
+			playerBoard.GainEnergy( energyToGain );
+			
+			if( woundsToGain > 0 )
+			{
+				playerBoard.AddCardToDeckAndShuffle( Wound, woundsToGain );
+			}
 
 			if( isSpotWeakness )
 			{
@@ -358,9 +374,30 @@ bool Game::StartPlayCard( EventArgs const& args )
 					eMoveType enemyMoveType = enemyIntent->m_moveType;
 					if( enemyMoveType == Attack || enemyMoveType == AttackDefend )
 					{
-						player.AddStength( 3 );
+						player.AddStrength( 3 );
 					}
 				}
+			}
+			if( cardDef.m_cardDraw > 0 )
+			{
+				for( int cardCount = 0; cardCount < cardDef.m_cardDraw; cardCount++ )
+				{
+					StartDrawCard( EventArgs() );
+				}
+			}
+			if( cardDef.m_enemyStrengthModifier )
+			{
+				enemy.AddStrength( cardDef.m_enemyStrengthModifier );
+			}
+
+			if( cardDef.m_isLimitBreak )
+			{
+				player.AddStrength( player.GetStrength() );
+			}
+			
+			if( cardDef.m_maxHealthIncrease != 0 && enemy.GetHealth() <= 0 )
+			{
+				player.AddMaxHealth( cardDef.m_maxHealthIncrease );
 			}
 
 			Transform toDiscardPileTransform;
@@ -371,6 +408,8 @@ bool Game::StartPlayCard( EventArgs const& args )
 			Delegate<EventArgs const&>& endAnimationDelegate = cardWidget->StartAnimation( toDiscardPileTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
 			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayCard );
 			
+			enemy.UpdateIntentWidget();
+
 			return true;
 		}
 	}
@@ -378,9 +417,110 @@ bool Game::StartPlayCard( EventArgs const& args )
 	{
 		m_isUIDirty = true;
 	}
-	//m_isUIDirty = true;
 
 	return false;
+}
+
+bool Game::StartDrawCard( EventArgs const& args )
+{
+	Player& player = m_currentGamestate->m_player;
+	PlayerBoard& playerBoard = player.m_playerBoard;
+
+	eCard drawnCard = playerBoard.DrawCard();
+	CardDefinition const& drawnCardDef = CardDefinition::GetCardDefinitionByType( drawnCard );
+
+
+
+	AABB2 handBounds = m_handWidget->GetLocalAABB2();
+	std::vector<AABB2> cardSlots = handBounds.GetBoxAsColumns( playerBoard.GetHandSize() );
+	std::vector<eCard> playerHand = playerBoard.GetHandAsVector();
+
+	std::vector<Transform> handTransforms = GetGoalHandTransforms( (int)playerHand.size() );
+
+
+	std::vector<Widget*> cardWidgetsInHand = m_handWidget->GetChildWidgets();
+
+	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
+	{
+		if( handIndex == 0 )
+		{
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = new Widget( *m_baseCardWidget );
+			Transform startTransform = cardWidget->GetTransform();
+			startTransform.m_position = Vec2( -6.f, 0.f );
+			startTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, 90.f, 0.f );
+			cardWidget->SetTransform( startTransform );
+			CardDefinition const& cardDef = drawnCardDef;
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			//Add Play Card event to card
+			EventArgs& releaseArgs = cardWidget->m_releaseArgs;
+			eCard cardType = cardDef.GetCardType();
+			releaseArgs.SetValue( "cardType", (int)cardType );
+			releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
+			Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+			releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
+			releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+
+			Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+			selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
+
+			m_handWidget->AddChild( cardWidget );
+
+			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			finalPositionTransform = handTransforms[handIndex];
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		}
+		else
+		{
+			//Create card
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = cardWidgetsInHand[handIndex-1];
+			Transform startTransform = cardWidget->GetTransform();
+
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex-1] );
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			finalPositionTransform = handTransforms[handIndex];
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		}
+// 		//Create card
+// 		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+// 		Widget* cardWidget = new Widget( *m_baseCardWidget );
+// 		Transform startTransform = cardWidget->GetTransform();
+// 		startTransform.m_position = Vec2( -6.f, 0.f );
+// 		startTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, 90.f, 0.f );
+// 		//cardWidget->SetPosition( Vec2( -6.f, 0.f ) );
+// 		cardWidget->SetTransform( startTransform );
+// 		//cardWidget->SetPosition( slotCenter );
+// 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+// 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+// 
+// 		//Add Play Card event to card
+// 		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
+// 		eCard cardType = cardDef.GetCardType();
+// 		releaseArgs.SetValue( "cardType", (int)cardType );
+// 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
+// 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+// 		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
+// 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+// 
+// 		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+// 		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
+// 
+// 		m_handWidget->AddChild( cardWidget );
+// 
+// 		Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+// 		//finalPositionTransform.m_position = slotCenter;
+// 		finalPositionTransform = handTransforms[handIndex];
+// 		cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+// 		//cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
+	}
+
+//	EndStartPlayerTurn( EventArgs() );
+
+	return true;
 }
 
 bool Game::EndPlayCard( EventArgs const& args )
@@ -401,7 +541,7 @@ bool Game::FightOver( EventArgs const& args )
 	{
 		if( m_endFightWidget )
 		{
-			m_endFightWidget->SetText( "You Lose! Click to restart." );
+			m_endFightWidget->SetText( Stringf("You survived %i rounds", m_currentGamestate->m_roundsWon).c_str() );
 			m_endFightWidget->SetIsVisible( true );
 			m_endFightWidget->SetCanHover( true );
 			m_endFightWidget->SetCanSelect( true );
@@ -425,6 +565,9 @@ bool Game::FightOver( EventArgs const& args )
 			m_endFightWidget->m_releaseDelegate.SubscribeMethod( this, &Game::RestartGame );
 			//m_endFightWidget->SetEventToFire( "restartFight" );
 		}
+		m_endFightWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+		WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+		m_endFightWidget->StartAnimation( endFightAnimation );
 		//You win!
 	}
 	else if( enemyHealth <= 0 )
@@ -453,7 +596,36 @@ bool Game::FightOver( EventArgs const& args )
 
 			GenerateAndDisplayEndFightAddCardsWidgets();
 		}
+
+		m_endFightWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+		WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+		m_endFightWidget->StartAnimation( endFightAnimation );
+
+		m_currentGamestate->m_roundsWon++;
 	}
+
+	return true;
+}
+
+bool Game::ChooseNextFight( EventArgs const& args )
+{
+	if( !m_endFightWidget )
+	{
+		Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 128, 128, 128, 255 ) );
+		Transform endFightTransform;
+		endFightTransform.m_scale = Vec3( 16.f, 9.f, 1.f );
+		m_endFightWidget = new Widget( endFightTransform );
+		m_endFightWidget->SetTexture( darkGreyTexture, darkGreyTexture, darkGreyTexture );
+		m_endFightWidget->SetTextSize( 0.2f );
+		m_endFightWidget->SetCanHover( true );
+		m_endFightWidget->SetCanDrag( false );
+		m_endFightWidget->SetIsVisible( true );
+		g_theUIManager->GetRootWidget()->AddChild( m_endFightWidget );
+
+
+	}
+
+	GenerateAndDisplayChooseFightWidgets();
 
 	return true;
 }
@@ -1143,6 +1315,44 @@ void Game::GenerateAndDisplayEndFightAddCardsWidgets()
 	m_endFightWidget->AddChild( m_endFightCard1Widget );
 	m_endFightWidget->AddChild( m_endFightCard2Widget );
 	m_endFightWidget->AddChild( m_endFightCard3Widget );
+
+
+	m_endFightTextWidget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard1Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard2Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	m_endFightCard3Widget->SetTint( Rgba8( 255, 255, 255, 0 ) );
+	WidgetAnimation endFightTextAnimation = WidgetAnimation( m_endFightTextWidget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight1Animation = WidgetAnimation( m_endFightCard1Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight2Animation = WidgetAnimation( m_endFightCard2Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight3Animation = WidgetAnimation( m_endFightCard3Widget, Rgba8( 255, 255, 255, 255 ), 1.f, eSmoothingFunction::SMOOTHSTEP3 );
+	m_endFightTextWidget->StartAnimation( endFightTextAnimation );
+	m_endFightCard1Widget->StartAnimation( endFight1Animation );
+	m_endFightCard2Widget->StartAnimation( endFight2Animation );
+	m_endFightCard3Widget->StartAnimation( endFight3Animation );
+}
+
+void Game::GenerateAndDisplayChooseFightWidgets()
+{
+	Texture const* darkGreyTexture = g_theRenderer->CreateTextureFromColor( Rgba8( 180, 180, 180, 255 ) );
+
+	Transform textTransform = Transform( Vec3( 0.f, 3.f, 0.f ), Vec3(), Vec3( 4.f, 1.f, 1.f ) );
+	m_chooseFightTextWidget = new Widget( textTransform, nullptr );
+	m_chooseFightTextWidget->SetText( "Add a card" );
+	m_chooseFightTextWidget->SetTextSize( 0.3f );
+	m_chooseFightTextWidget->SetTexture( darkGreyTexture, nullptr, nullptr );
+	m_chooseFightTextWidget->SetCanHover( false );
+
+	Vec3 fightScale = Vec3( 3.f, 3.75f, 1.f );
+
+	Transform fight1Transform = Transform( Vec3( -4.f, -1.f, 0.f ), Vec3(), fightScale );
+	Transform fight2Transform = Transform( Vec3( 0.f, -1.f, 0.f ), Vec3(), fightScale );
+	Transform fight3Transform = Transform( Vec3( 4.f, -1.f, 0.f ), Vec3(), fightScale );
+
+	m_chooseFightOption1Widget = new Widget( fight1Transform, nullptr );
+	m_chooseFightOption2Widget = new Widget( fight2Transform, nullptr );
+	m_chooseFightOption3Widget = new Widget( fight3Transform, nullptr );
+
+	//FightDefinition
 }
 
 void Game::ClearEndFightWidgets()
@@ -1166,4 +1376,28 @@ void Game::ClearEndFightWidgets()
 	{
 		m_endFightCard3Widget->MarkGarbage();
 	}
+}
+
+void Game::TransitionOutEndFightWidgets()
+{
+	Rgba8 endTint = Rgba8( 255, 255, 255, 0 );
+	WidgetAnimation endFightAnimation = WidgetAnimation( m_endFightWidget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFightTextAnimation = WidgetAnimation( m_endFightTextWidget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight1Animation = WidgetAnimation( m_endFightCard1Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight2Animation = WidgetAnimation( m_endFightCard2Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	WidgetAnimation endFight3Animation = WidgetAnimation( m_endFightCard3Widget, endTint, 1, eSmoothingFunction::SMOOTHSTEP3 );
+	Delegate<EventArgs const&>& endFightDelegate = m_endFightWidget->StartAnimation( endFightAnimation );
+	m_endFightTextWidget->StartAnimation( endFightTextAnimation );
+	m_endFightCard1Widget->StartAnimation( endFight1Animation );
+	m_endFightCard2Widget->StartAnimation( endFight2Animation );
+	m_endFightCard3Widget->StartAnimation( endFight3Animation );
+
+	endFightDelegate.SubscribeMethod( this, &Game::EndLoadNextFight );
+}
+
+Fight::Fight( RandomNumberGenerator& rng )
+{
+	enemyDef = &EnemyDefinition::GetRandomEnemyDefinition( rng );
+
+	rewardDef = &RewardDefinition::GetRandomRewardDefinition( rng );
 }

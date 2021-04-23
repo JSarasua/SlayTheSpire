@@ -42,6 +42,9 @@ public:
 	AABB2 GetBoxAtTop(float FractionOfWidth, float additionalWidth = 0.f);
 	AABB2 GetBoxAtBottom(float FractionOfWidth, float additionalWidth = 0.f);
 
+	AABB2 GetInnerBoxWithAlignment( Vec2 const& uvPosition, Vec2 const& offset, Vec2 const& pivot, Vec2 const& innerBoxPercentDimensions ) const;
+	AABB2 GetInnerBoxWithAlignment( Vec2 const& uvPosition, Vec2 const& offset, Vec2 const& pivot, AABB2 const& innerBox ) const;
+
 	std::vector<AABB2> GetBoxAsRows( int numberOfRows );
 	std::vector<AABB2> GetBoxAsColumns( int numberOfColumns );
 

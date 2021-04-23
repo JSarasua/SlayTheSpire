@@ -48,6 +48,14 @@ void EnemyDefinition::InitializeEnemyDefinitions()
 	s_enemyDefs[JawWorm] = EnemyDefinition( jawWormOrderedMoves, jawWormMoves, 40, jawWormTexture );
 }
 
+
+
+EnemyDefinition const& EnemyDefinition::GetRandomEnemyDefinition( RandomNumberGenerator& rng )
+{
+	int enemyIndex = rng.RollRandomIntLessThan( (int)NUM_ENEMIES );
+	return s_enemyDefs[enemyIndex];
+}
+
 EnemyMove EnemyDefinition::GetNextMove( RandomNumberGenerator& rng, int moveTurn ) const
 {
 	if( moveTurn <= m_orderedMoves.size() && moveTurn > 0 )

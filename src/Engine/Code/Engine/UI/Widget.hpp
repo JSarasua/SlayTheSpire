@@ -34,7 +34,10 @@ class Widget
 public:
 	Widget();
 	Widget( AABB2 screenBounds ); //Root Parent Widget
+	Widget( AABB2 localBounds, Widget* parentWidget );
 	Widget( Transform const& transform, Widget* parentWidget = nullptr );
+	Widget( Vec2 const& parentUVs, Vec2 const& parentPercentDimension, Widget* parentWidget, Vec2 const& offset = Vec2(), Vec2 const& pivot = Vec2( 0.5f, 0.5f ) );
+
 	~Widget();
 
 	virtual void Render();
@@ -61,6 +64,7 @@ public:
 	void ClearChildren();
 	void SetParent( Widget* parentWidget ) { m_parentWidget = parentWidget; }
 	void SetTextAlignment( Vec2 const& textAlignment ) { m_textAlignent = textAlignment; }
+	void SetTint( Rgba8 const& widgetTint ) { m_tint = widgetTint; }
 
 	//Accessors
 	Transform GetTransform() const { return m_widgetTransform; }
@@ -112,6 +116,7 @@ protected:
 
 	//Assume 1x1 Square
 	Transform m_widgetTransform;
+	Rgba8 m_tint = Rgba8::WHITE;
 	GPUMesh* m_mesh = nullptr;
 	Texture const* m_texture = nullptr;
 	Texture const* m_highlightTexture = nullptr;

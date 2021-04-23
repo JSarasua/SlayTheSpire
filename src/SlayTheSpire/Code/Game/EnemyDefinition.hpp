@@ -42,6 +42,7 @@ public:
 	~EnemyDefinition() {}
 	static void InitializeEnemyDefinitions();
 	static EnemyDefinition const& GetEnemyDefinitionByType( eEnemy enemyType ) { return s_enemyDefs[enemyType]; }
+	static EnemyDefinition const& GetRandomEnemyDefinition( RandomNumberGenerator& rng );
 
 	EnemyMove GetNextMove( RandomNumberGenerator& rng, int moveTurn ) const;
 	EnemyMove GetRandomMove( RandomNumberGenerator& rng ) const;

@@ -69,6 +69,11 @@ void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 	m_actionsDone++;
 	m_currentEnemyMove = m_enemyDef->GetNextMove( rng, m_actionsDone );
 
+	UpdateIntentWidget();
+}
+
+void Enemy::UpdateIntentWidget()
+{
 	m_currentIntent = &MoveTypeDefinition::GetMoveTypeDefinitionByType( m_currentEnemyMove.m_moveType );
 	Texture const* moveTexture = m_currentIntent->m_moveTypeTexture;
 	m_intentWidget->SetTexture( moveTexture, nullptr, nullptr );
@@ -83,7 +88,6 @@ void Enemy::UpdateEnemyMove( RandomNumberGenerator& rng )
 	{
 		m_intentTextWidget->SetText( "" );
 	}
-
 }
 
 void Enemy::Reset()
