@@ -162,23 +162,31 @@ bool Game::StartPlayerEndTurn( EventArgs const& args )
  	std::vector<Widget*> childWidgets = m_handWidget->GetChildWidgets();
 
 	float animationSpeed = 1.f;
-	for( Widget* childWidget : childWidgets )
+	if( childWidgets.size() == 0 )
 	{
-		childWidget->SetCanHover( false );
-
-		Transform toDiscardPileTransform;
-		toDiscardPileTransform.m_position = Vec3( 7.f, 0.f, 0.f );
-		toDiscardPileTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, -180.f, 0.f );
-		toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
-
-		Delegate<EventArgs const&>& endAnimationDelegate = childWidget->StartAnimation( toDiscardPileTransform, 0.5f * animationSpeed, eSmoothingFunction::SMOOTHSTART3 );
-		if( childWidget == childWidgets.back() )
-		{
-			endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayerEndTurn );
-		}
-
-		animationSpeed *= 1.1f;
+		EndPlayerEndTurn( EventArgs() );
 	}
+	else
+	{
+		for( Widget* childWidget : childWidgets )
+		{
+			childWidget->SetCanHover( false );
+
+			Transform toDiscardPileTransform;
+			toDiscardPileTransform.m_position = Vec3( 7.f, 0.f, 0.f );
+			toDiscardPileTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, -180.f, 0.f );
+			toDiscardPileTransform.m_scale = Vec3( 0.1f, 0.1f, 1.f );
+
+			Delegate<EventArgs const&>& endAnimationDelegate = childWidget->StartAnimation( toDiscardPileTransform, 0.5f * animationSpeed, eSmoothingFunction::SMOOTHSTART3 );
+			if( childWidget == childWidgets.back() )
+			{
+				endAnimationDelegate.SubscribeMethod( this, &Game::EndPlayerEndTurn );
+			}
+
+			animationSpeed *= 1.1f;
+		}
+	}
+
 
 	return true;
 }
@@ -333,6 +341,21 @@ bool Game::StartPlayCard( EventArgs const& args )
 	CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( cardType );
 	Widget* invalidWidget = nullptr;
 	Widget* cardWidget = (Widget*)args.GetValue<std::uintptr_t>( "cardWidget", (std::uintptr_t)invalidWidget );
+	
+	std::vector<Widget*> const& handWidgets = m_handWidget->GetChildWidgets();
+
+	int widgetIndex = 0;
+	for( Widget* widget : handWidgets )
+	{
+		if( widget == cardWidget )
+		{
+			break;
+		}
+		else
+		{
+			widgetIndex++;
+		}
+	}
 
 	int cardCost = cardDef.GetCost();
 	int cardAttack = cardDef.GetAttack();
@@ -382,7 +405,9 @@ bool Game::StartPlayCard( EventArgs const& args )
 			{
 				for( int cardCount = 0; cardCount < cardDef.m_cardDraw; cardCount++ )
 				{
-					StartDrawCard( EventArgs() );
+					EventArgs drawArgs;
+					drawArgs.SetValue( "playCardIndex", widgetIndex );
+					StartDrawCard( drawArgs );
 				}
 			}
 			if( cardDef.m_enemyStrengthModifier )
@@ -423,6 +448,8 @@ bool Game::StartPlayCard( EventArgs const& args )
 
 bool Game::StartDrawCard( EventArgs const& args )
 {
+	int playedCardWidgetIndex = args.GetValue( "playCardIndex", -1 );
+
 	Player& player = m_currentGamestate->m_player;
 	PlayerBoard& playerBoard = player.m_playerBoard;
 
@@ -439,11 +466,14 @@ bool Game::StartDrawCard( EventArgs const& args )
 
 
 	std::vector<Widget*> cardWidgetsInHand = m_handWidget->GetChildWidgets();
-
-	for( size_t handIndex = 0; handIndex < playerHand.size(); handIndex++ )
+	int handWidgetCountZeroIndexed = (int)cardWidgetsInHand.size() - 1;
+	bool hasAddedCard = false;
+	for( int handIndex = (int)playerHand.size() - 1; handIndex >= 0; handIndex-- )
 	{
-		if( handIndex == 0 )
+		if( hasAddedCard == false && drawnCard == playerHand[handIndex] )
 		{
+			hasAddedCard = true;
+
 			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
 			Widget* cardWidget = new Widget( *m_baseCardWidget );
 			Transform startTransform = cardWidget->GetTransform();
@@ -468,54 +498,147 @@ bool Game::StartDrawCard( EventArgs const& args )
 			m_handWidget->AddChild( cardWidget );
 
 			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
-			finalPositionTransform = handTransforms[handIndex];
+			if( playedCardWidgetIndex > handIndex )
+			{
+				finalPositionTransform = handTransforms[handIndex];
+			}
+			else
+			{
+				finalPositionTransform = handTransforms[handIndex];
+			}
+			//finalPositionTransform = handTransforms[handIndex]; //+1 if playedCardWidgetIndex > handIndx
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		}
+		else if( playedCardWidgetIndex <= handIndex && hasAddedCard == true )
+		{
+			//Create card
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = cardWidgetsInHand[handIndex];
+			Transform startTransform = cardWidget->GetTransform();
+
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			//Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			Transform finalPositionTransform = handTransforms[handIndex];
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+
+		}
+		else if( playedCardWidgetIndex > handIndex && hasAddedCard == true )
+		{
+			//Create card
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = cardWidgetsInHand[handIndex];
+			Transform startTransform = cardWidget->GetTransform();
+
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			//Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			Transform finalPositionTransform = handTransforms[handIndex]; //+0
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		}
+		else if( playedCardWidgetIndex <= handIndex && hasAddedCard == false )
+		{
+			//Create card
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = cardWidgetsInHand[handIndex];
+			Transform startTransform = cardWidget->GetTransform();
+
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			//Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			Transform finalPositionTransform = handTransforms[handIndex];
+			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+		}
+		else if( playedCardWidgetIndex > handIndex && hasAddedCard == false )
+		{
+			//Create card
+			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+			Widget* cardWidget = cardWidgetsInHand[handIndex];
+			Transform startTransform = cardWidget->GetTransform();
+
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
+			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+
+			//Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			Transform finalPositionTransform = handTransforms[handIndex + 1]; //+1
 			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
 		}
 		else
 		{
 			//Create card
 			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
-			Widget* cardWidget = cardWidgetsInHand[handIndex-1];
+			Widget* cardWidget = cardWidgetsInHand[handIndex];
 			Transform startTransform = cardWidget->GetTransform();
 
-			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex-1] );
+			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
 			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 
-			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
-			finalPositionTransform = handTransforms[handIndex];
+			//Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+			Transform finalPositionTransform = handTransforms[handIndex];
 			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
 		}
-// 		//Create card
-// 		Vec2 slotCenter = cardSlots[handIndex].GetCenter();
-// 		Widget* cardWidget = new Widget( *m_baseCardWidget );
-// 		Transform startTransform = cardWidget->GetTransform();
-// 		startTransform.m_position = Vec2( -6.f, 0.f );
-// 		startTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, 90.f, 0.f );
-// 		//cardWidget->SetPosition( Vec2( -6.f, 0.f ) );
-// 		cardWidget->SetTransform( startTransform );
-// 		//cardWidget->SetPosition( slotCenter );
-// 		CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex] );
-// 		cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+// 		else
+// 		{
+// 			//Create card
+// 			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+// 			Widget* cardWidget = cardWidgetsInHand[handIndex-1];
+// 			Transform startTransform = cardWidget->GetTransform();
 // 
-// 		//Add Play Card event to card
-// 		EventArgs& releaseArgs = cardWidget->m_releaseArgs;
-// 		eCard cardType = cardDef.GetCardType();
-// 		releaseArgs.SetValue( "cardType", (int)cardType );
-// 		releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
-// 		Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
-// 		releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
-// 		releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+// 			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex-1] );
+// 			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 // 
-// 		Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
-// 		selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
+// 			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+// 			finalPositionTransform = handTransforms[handIndex];
+// 			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
 // 
-// 		m_handWidget->AddChild( cardWidget );
+// 		}
+
+// 		if( handIndex == 0 )
+// 		{
+// 			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+// 			Widget* cardWidget = new Widget( *m_baseCardWidget );
+// 			Transform startTransform = cardWidget->GetTransform();
+// 			startTransform.m_position = Vec2( -6.f, 0.f );
+// 			startTransform.m_rotationPitchRollYawDegrees = Vec3( 0.f, 90.f, 0.f );
+// 			cardWidget->SetTransform( startTransform );
+// 			CardDefinition const& cardDef = drawnCardDef;
+// 			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
 // 
-// 		Transform finalPositionTransform = m_baseCardWidget->GetTransform();
-// 		//finalPositionTransform.m_position = slotCenter;
-// 		finalPositionTransform = handTransforms[handIndex];
-// 		cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
-// 		//cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTART3 );
+// 			//Add Play Card event to card
+// 			EventArgs& releaseArgs = cardWidget->m_releaseArgs;
+// 			eCard cardType = cardDef.GetCardType();
+// 			releaseArgs.SetValue( "cardType", (int)cardType );
+// 			releaseArgs.SetValue( "cardWidget", (std::uintptr_t)cardWidget );
+// 			Delegate<EventArgs const&>& releaseDelegate = cardWidget->m_releaseDelegate;
+// 			releaseDelegate.SubscribeMethod( this, &Game::ReleaseTargeting );
+// 			releaseDelegate.SubscribeMethod( this, &Game::StartPlayCard );
+// 
+// 			Delegate<EventArgs const&>& selectedDelegate = cardWidget->m_selectedDelegate;
+// 			selectedDelegate.SubscribeMethod( this, &Game::UpdateTargeting );
+// 
+// 			m_handWidget->AddChild( cardWidget );
+// 
+// 			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+// 			finalPositionTransform = handTransforms[handIndex];
+// 			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+// 		}
+// 		else
+// 		{
+// 			//Create card
+// 			Vec2 slotCenter = cardSlots[handIndex].GetCenter();
+// 			Widget* cardWidget = cardWidgetsInHand[handIndex-1];
+// 			Transform startTransform = cardWidget->GetTransform();
+// 
+// 			CardDefinition const& cardDef = CardDefinition::GetCardDefinitionByType( playerHand[handIndex-1] );
+// 			cardWidget->SetTexture( cardDef.GetCardTexture(), m_cyanTexture, m_redTexture );
+// 
+// 			Transform finalPositionTransform = m_baseCardWidget->GetTransform();
+// 			finalPositionTransform = handTransforms[handIndex];
+// 			cardWidget->StartAnimation( finalPositionTransform, 0.5f, eSmoothingFunction::SMOOTHSTEP3 );
+// 		}
 	}
 
 //	EndStartPlayerTurn( EventArgs() );
