@@ -64,7 +64,6 @@ void CardDefinition::InitializeCardDefinitions()
 	Texture const* bloodlettingTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Bloodletting.png" );
 	Texture const* woundTexture = g_theRenderer->CreateOrGetTextureFromFile( "Data/Images/Wound.png" );
 	
-
 	CardDefinition strikeCard = CardDefinition( Strike, 1, 6, 0, strikeTexture );
 	CardDefinition defendCard = CardDefinition( Defend, 1, 0, 5, defendTexture );
 	CardDefinition spotWeaknessCard = CardDefinition( SpotWeakness, 1, 0, 0, spotWeaknessTexture, true );
@@ -79,7 +78,7 @@ void CardDefinition::InitializeCardDefinitions()
 	heavyBladeCard.m_strengthMultiplier = 3;
 	CardDefinition hemokinesisCard = CardDefinition( Hemokinesis, 1, 15, 0, hemokinesisTexture );
 	hemokinesisCard.m_healthIncrease = -2;
-	CardDefinition pommelStrikeCard = CardDefinition( PommelStrike, 1, 0, 0, pommelStrikeTexture );
+	CardDefinition pommelStrikeCard = CardDefinition( PommelStrike, 1, 9, 0, pommelStrikeTexture );
 	pommelStrikeCard.m_cardDraw = 1;
 	CardDefinition seeingRedCard = CardDefinition( SeeingRed, 1, 0, 0, seeingRedTexture, false, true );
 	seeingRedCard.m_energyGain = 2;
@@ -90,7 +89,7 @@ void CardDefinition::InitializeCardDefinitions()
 	CardDefinition bloodlettingCard = CardDefinition( Bloodletting, 0, 0, 0, bloodlettingTexture );
 	bloodlettingCard.m_healthIncrease = -3;
 	bloodlettingCard.m_energyGain = 2;
-	CardDefinition woundCard = CardDefinition( Wound, 9999, 0, 0, woundTexture );
+ 	CardDefinition woundCard = CardDefinition( Wound, 9999, 0, 0, woundTexture );
 
 	s_cardDefs[Strike] = strikeCard;
 	s_cardDefs[Defend] = defendCard;
@@ -104,13 +103,11 @@ void CardDefinition::InitializeCardDefinitions()
 	s_cardDefs[LimitBreak] = limitBreakCard;
 	s_cardDefs[HeavyBlade] = heavyBladeCard;
 	s_cardDefs[Hemokinesis] = hemokinesisCard;
-	s_cardDefs[PommelStrike] = pommelStrikeCard;
-	s_cardDefs[SeeingRed] = seeingRedCard;
-	s_cardDefs[PerfectedStrike] = perfectedStrikeCard;
-	s_cardDefs[WildStrike] = wildStrikeCard;
-	s_cardDefs[Bloodletting] = limitBreakCard;
-	s_cardDefs[Wound] = woundCard;
-
-
+ 	s_cardDefs[PommelStrike] = pommelStrikeCard;
+ 	s_cardDefs[SeeingRed] = seeingRedCard;
+ 	s_cardDefs[PerfectedStrike] = perfectedStrikeCard;
+ 	s_cardDefs[WildStrike] = wildStrikeCard;
+ 	s_cardDefs[Bloodletting] = limitBreakCard;
+ 	s_cardDefs[Wound] = woundCard;
 }
 

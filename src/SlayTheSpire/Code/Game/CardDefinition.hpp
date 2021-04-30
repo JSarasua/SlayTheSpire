@@ -20,12 +20,12 @@ enum eCard
  	LimitBreak,
 	HeavyBlade,
 	Hemokinesis,
-	PommelStrike,
-	SeeingRed,
-	PerfectedStrike,
-	WildStrike,
-	Bloodletting,
-	Wound,
+ 	PommelStrike,
+ 	SeeingRed,
+ 	PerfectedStrike,
+ 	WildStrike,
+ 	Bloodletting,
+ 	Wound,
 	NUM_CARDS
 };
 
@@ -61,13 +61,13 @@ private:
 public:
 	bool m_isSpotWeakness = false;
 	bool m_isExhaust = false;
+	bool m_isLimitBreak = false;
+	bool m_isPerfectedStrike = false;
 	int m_cardDraw = 0;
 	int m_maxHealthIncrease = 0;
 	int m_enemyStrengthModifier = 0;
 	int m_strengthPerTurn = 0;
-	bool m_isLimitBreak = false;
 	int m_healthIncrease = 0;
-	bool m_isPerfectedStrike = false;
 	int m_woundsToAdd = 0;
 	int m_strengthMultiplier = 1;
 	int m_energyGain = 0;
